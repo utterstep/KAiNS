@@ -16,8 +16,6 @@ print "1. Write to file\n2. Read from file\n\n0. Exit\n\nEnter what do you want 
 
 chomp ($choice = <>);
 
-our $time_s2b = 0;
-
 goto START if ($choice !~ /[0-2]{1}/);
 
 if ($choice == 1) {
@@ -39,5 +37,5 @@ elsif ($choice == 2) {
 	$text = readBmp ($file);
 	clear;
 	$time = time - $time;
-	print "There was:\n$text\n\nDone in $time seconds.\nstr2bin func used $time_s2b msecs";
+	print "There was:\n$text\n\nDone in $time seconds.";
 }
