@@ -2,7 +2,7 @@
 
 use File::Copy;
 use English;
-do 'wav_steg.pl';
+require '../lib/wav_steg.pm';
 
 sub clear {
 	if ($OSNAME =~ m/win/i) { system "cls" }

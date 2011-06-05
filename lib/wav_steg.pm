@@ -1,4 +1,4 @@
-require 'bintools.pm';
+do 'bintools.pm';
 
 sub getFragSize ($) {
 	open (IN, "<:raw", $_[0]);
@@ -21,22 +21,22 @@ sub write2Wav ($$) {
 	my @bin = str2bin($_[0]);
 	my @cod = split('', dec2bin(scalar(@bin)/8));
 	
-	sysseek (OUT, 45, SEEK_SET);
+	sysseek (OUT, 44, SEEK_SET);
 	for ($i=0; $i < 8; $i++) {
 		my $t = '';
 		sysread (OUT, $t, 2);
-		my @now = byte2bin(substr($t, 0, 1));
+		my @now = byte2bin($t);
 		@now[4..7] = @cod[$i*4..$i*4+3];
 		$write .= chr (oct ('0b' . join('',@now))) . substr($t, 1, 1);
 	}
 	for ($i=0; $i<=$#bin; $i+=4) {
 		my $t = '';
 		sysread (OUT, $t, 2);
-		my @now = byte2bin(substr($t, 0, 1));
+		my @now = byte2bin($t);
 		@now[4..7] = @bin[$i..$i+3];
 		$write .= chr (oct ('0b' . join ('', @now))) . substr($t, 1, 1);
 	}
-	sysseek (OUT, 45, 0);
+	sysseek (OUT, 44, 0);
 	syswrite (OUT, $write);
 	close OUT;
 }
@@ -45,14 +45,14 @@ sub readWav ($) {
 	open (READ, '<:raw', $_[0]);
 	
 	my $fsize = getFragSize($_[0]);
-	my $size = (stat($_[0]))[7]-45;
+	my $size = (stat($_[0]))[7]-44;
 	
 	my $t = '';
 	my $b_text = '';
 	my $m_size = 0;
 	my $text = '';
 	
-	sysseek (READ, 45, SEEK_SET);
+	sysseek (READ, 44, SEEK_SET);
 	sysread (READ, $t, $size);
 	sysseek (READ, 0, 0);
 	close READ;

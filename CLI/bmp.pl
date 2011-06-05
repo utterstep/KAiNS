@@ -3,7 +3,7 @@
 use utf8;
 use File::Copy;
 use English;
-do 'bmp_steg.pl';
+require '../lib/bmp_steg.pm';
 
 sub clear {
 	if ($OSNAME =~ m/win/i) { system "cls" }
@@ -38,5 +38,5 @@ elsif ($choice == 2) {
 	$text = readBmp ($file);
 	clear;
 	$time = time - $time;
-	print "There was:\n$text\n\nDone in $time seconds.\n;
+	print "There was:\n$text\n\nDone in $time seconds.\n;"
 }
