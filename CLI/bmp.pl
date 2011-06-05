@@ -1,5 +1,6 @@
-#!/usr/bin/perl
+﻿#!/usr/bin/perl
 
+use utf8;
 use File::Copy;
 use English;
 do 'bmp_steg.pl';
@@ -37,5 +38,5 @@ elsif ($choice == 2) {
 	$text = readBmp ($file);
 	clear;
 	$time = time - $time;
-	print "There was:\n$text\n\nDone in $time seconds.";
+	print "There was:\n$text\n\nDone in $time seconds.\n;
 }
