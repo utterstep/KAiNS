@@ -45,6 +45,7 @@ my $text_d = $main->AddTextfield(
 	-height	=> 490,
 	-multiline => 1,
 	-vscroll=> 1,
+	-readonly=> 1,
 );
 
 # my $scroll1 = Win32::GUI::UpDown->new();
@@ -53,24 +54,22 @@ my $text_d = $main->AddTextfield(
 # $scroll1->Buddy($text_enc);
 # $scroll2->Buddy($text_dec);
 
-$main->AddButton(
+my %button;
+
+$button{'ENC'} = $main->AddButton(
 	-name	=> "StegButton",
 	-text	=> "Записать в файл",
-	# -default=> 1,
-	# -ok		=> 1,
-	-width	=> 100,
+	-width	=> 110,
 	-height	=> 30,
-	-left	=> 290,
-	-top	=> 540,
+	-font	=> $font,
 );
 
-$main->AddButton(
+$button{'DEC'} = $main->AddButton(
 	-name	=> "unStegButton",
 	-text	=> "Прочитать из файла",
 	-width	=> 130,
 	-height	=> 30,
-	-left	=> 650,
-	-top	=> 540,
+	-font	=> $font,
 );
 
 $main->Resize(805, 620);
@@ -88,6 +87,10 @@ sub Main_Resize {
 	$text_d->Left(($mw / 2));
 	$text_d->Width(($mw / 2) - 10);
 	$text_d->Height($mh - 90);
+	$button{'ENC'}->Left(($mw / 2) - 120);
+	$button{'ENC'}->Top($mh - 40);
+	$button{'DEC'}->Left($mw - 140);
+	$button{'DEC'}->Top($mh - 40);
 
 	return 0;
 }
