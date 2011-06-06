@@ -1,5 +1,3 @@
-do 'bintools.pm';
-
 sub getFragSize ($) {
 	open (IN, "<:raw", $_[0]);
 
@@ -79,3 +77,5 @@ sub readWav ($) {
 	
 	return substr($text, 0, -2);
 }
+
+1;

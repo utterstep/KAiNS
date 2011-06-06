@@ -1,5 +1,3 @@
-do 'bintools.pm';
-
 sub getOffsetBmp ($) {
 	open (IN, "<:raw", $_[0]);
 
