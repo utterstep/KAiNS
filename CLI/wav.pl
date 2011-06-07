@@ -3,6 +3,7 @@
 use File::Copy;
 use English;
 require '../lib/wav_steg.pm';
+require '../lib/bintools.pm';
 
 sub clear {
 	if ($OSNAME =~ m/win/i) { system "cls" }

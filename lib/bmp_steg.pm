@@ -7,15 +7,15 @@ sub getOffsetBmp ($) {
 	sysseek (IN, 0, 0);
 
 	close IN;
-	
+
 	return $offset;
 }
 
 sub write2Bmp ($$) {
 	open (OUT, "+<:raw", $_[1]);
-	
+
 	my $write = '';
-	
+
 	my $off = getOffsetBmp($_[1]);
 	sysseek (OUT, $off, 0);
 	my @bin = str2bin($_[0]);
@@ -41,29 +41,29 @@ sub write2Bmp ($$) {
 
 sub readBmp ($) {
 	open (READ, '<:raw', $_[0]);
-	
+
 	my $off = getOffsetBmp($_[0]);
 	my $size = (stat($_[0]))[7]-$off;
-	
+
 	my $t = '';
 	my $b_text = '';
 	my $m_size = 0;
 	my $text = '';
-	
+
 	sysseek (READ, $off, 0);
 	sysread (READ, $t, $size--);
 	sysseek (READ, 0, 0);
 	close READ;
-	
+
 	@text = split ('', $t);
-	
+
 	for ($i=0; $i < 16; $i++) {
 		my @here = byte2bin($text[$i]);
 		$m_size .= join ('', @here[6..7]);
 	}
-	
+
 	$m_size = (oct ('0b' . $m_size))*4 + 16;
-	
+
 	for ($i = 16; $i <= $m_size; $i++) {
 		my @here = byte2bin($text[$i]);
 		$b_text .= join('', @here[6..7]);
@@ -72,7 +72,7 @@ sub readBmp ($) {
 	for ($i = 0; $i <= $size; $i+=8) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
-	
+
 	sysseek (READ, 0, 0);
 	close READ;
 	return substr($text, 0, -2);

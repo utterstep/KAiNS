@@ -10,87 +10,142 @@ require 'bintools.pm'; #loading module for binary op's
 require 'wav_steg.pm'; #...module for wav...
 require 'bmp_steg.pm'; #and bmp steganorgaphy
 
-our $ver = '0.0.1';
+our $ver = '0.0.2';
 
-my $main = Win32::GUI::Window->new(
-	-name	=> 'Main',
-	-minwidth	=> 805,
-	-minheight	=> 620,
-	-text	=> "KAinS by Utter, ver$ver",
+my $ChildCount = -1;
+my $Window;
+my %file;
+my @filter=("BMP image files", "*.bmp", "WAV audio files", "*.wav");
+my $def_f;
+
+for (my $i = 0; $i < scalar(@filter)/2; $i++) {
+	$def_f .= "$filter[($i*2+1)];";
+}
+
+push (@filter, ("All supported types", $def_f));
+
+$def_f = ((scalar(@filter)/2)-1);
+
+my $Menu = Win32::GUI::MakeMenu(
+	"&File"		=> "File",
+	"   > &New"			=> { -name => "File_New",  -onClick => \&NewChild },
+	"   > -"			=> 0,
+	"   > E&xit"		=> { -name => "File_Exit", -onClick => sub { -1; } },
+	"&Window"	=> "Window",
+	"   > &Next"		=> { -name => "Next",	-onClick => sub { $Window->{Client}->Next;	 } },
+	"   > &Previous"	=> { -name => "Prev",	-onClick => sub { $Window->{Client}->Previous; } },
+	"   > -"			=> 0,
+	"   > &Cascade"		=> { -name => "Cascade", -onClick => sub { $Window->{Client}->Cascade(); 0; } },
+	"   > Tile &Horizontally"	=> { -name => "TileH",   -onClick => sub { $Window->{Client}->Tile(1);  } },
+	"   > Tile &Vertically"		=> { -name => "TileV",   -onClick => sub { $Window->{Client}->Tile(0);  } },
+	"&Help"		=> "Help",
+	"   > &About "		=> { -name => "About", -onClick => sub { 1; } },
 );
 
 my $font = Win32::GUI::Font->new(
 	-size => 10,
-);
+); 
 
-my $menu = $main->AddMenu();
+$Window = new Win32::GUI::MDIFrame (
+	-title  => "KAinS by Utter, ver$ver",
+	-minwidth  => 800,
+	-minheight => 600,
+	-name   => "Main",
+	-menu   => $Menu,
+) or die "Window"; 
 
-my $text_e = $main->AddTextfield(
-	-name	=> "Steg",
-	-font	=> $font,
-	-left	=> 10,
-	-top	=> 40,
-	-width	=> 380,
-	-height	=> 490,
-	-multiline => 1,
-	-vscroll=> 1,
-);
+$Window->AddMDIClient(
+	-name	   => "Client",
+	-firstchild => 100,
+	-windowmenu => $Menu->{Window}->{-handle},
+) or die "Client";
 
-my $text_d = $main->AddTextfield(
-	-name	=> "UnSteg",
-	-font	=> $font,
-	-left	=> 400,
-	-top	=> 40,
-	-width	=> 380,
-	-height	=> 490,
-	-multiline => 1,
-	-vscroll=> 1,
-	-readonly=> 1,
-);
-
-# my $scroll1 = Win32::GUI::UpDown->new();
-# my $scroll2 = Win32::GUI::UpDown->new();
-
-# $scroll1->Buddy($text_enc);
-# $scroll2->Buddy($text_dec);
-
-my %button;
-
-$button{'ENC'} = $main->AddButton(
-	-name	=> "StegButton",
-	-text	=> "Записать в файл",
-	-width	=> 110,
-	-height	=> 30,
-	-font	=> $font,
-);
-
-$button{'DEC'} = $main->AddButton(
-	-name	=> "unStegButton",
-	-text	=> "Прочитать из файла",
-	-width	=> 130,
-	-height	=> 30,
-	-font	=> $font,
-);
-
-$main->Resize(805, 620);
-$main->Show();
+$Window->Resize(805, 620);
+$Window->Show();
 Win32::GUI::Dialog();
 
-sub Main_Resize {
-	my $mw = $main->ScaleWidth();
-	my $mh = $main->ScaleHeight();
-	# my $lw = $text_e->Width();
-	# my $lh = $text_d->Height();
+sub NewChild {
+	my $Child = $Window->{Client}->AddMDIChild (
+		-name			=> "Child".++$ChildCount,
+		-onActivate		=> sub { print "Activate\n"; },
+		-onDeactivate		=> sub { print "Deactivate\n"; },
+		-onTerminate		=> sub { print "Terminate\n";},
+	) or die "Child";
 
-	$text_e->Width(($mw / 2) - 20);
-	$text_e->Height($mh - 90);
-	$text_d->Left(($mw / 2));
-	$text_d->Width(($mw / 2) - 10);
-	$text_d->Height($mh - 90);
-	$button{'ENC'}->Left(($mw / 2) - 120);
-	$button{'ENC'}->Top($mh - 40);
-	$button{'DEC'}->Left($mw - 140);
-	$button{'DEC'}->Top($mh - 40);
+	$Child->AddTextfield(
+		-name	=> "Steg",
+		-font	=> $font,
+		-left	=> 10,
+		-top	=> 10,
+		-width	=> 380,
+		-height	=> 490,
+		-multiline => 1,
+		-vscroll=> 1,
+		-onChange => \&Text
+	);
+
+	$Child->AddTextfield(
+		-name	=> "UnSteg",
+		-font	=> $font,
+		-left	=> 400,
+		-top	=> 10,
+		-width	=> 380,
+		-height	=> 490,
+		-multiline => 1,
+		-vscroll=> 1,
+		-readonly=> 1,
+	);
+
+	$Child->AddButton(
+		-name	=> "StegBut",
+		-text	=> "Записать в файл",
+		-width	=> 110,
+		-height	=> 30,
+		-font	=> $font,
+	);
+
+	$Child->AddButton(
+		-name	=> "uStegBut",
+		-text	=> "Прочитать из файла",
+		-width	=> 130,
+		-height	=> 30,
+		-font	=> $font,
+	);
+
+	# Force a resize.
+	$Child->Change(-onResize => \&ChildSize, );
+	ChildSize($Child);
+
+	while (!$file{$Child}) {
+		$file{$Child} = $Child->GetOpenFileName(
+		-filter =>\@filter,
+		-difaultfilter => 2,
+		-filemustexist => 1,
+		-pathmustexist => 1,
+		);
+	}
+
+	return 0;
+}
+
+sub Text {
+	my $self = shift;
+	print $self->GetLineCount();
+
+	return 0;
+}
+
+sub ChildSize {
+	my $self = shift;
+	my ($width, $height) = ($self->GetClientRect())[2..3];
+
+	$self->{UnSteg}->Left(($width / 2) + 5);
+	$self->{UnSteg}->Resize((($width / 2) - 15), ($height - 60));
+	$self->{Steg}->Resize((($width / 2) - 15), ($height - 60));
+	$self->{StegBut}->Left(($width / 2) - 110);
+	$self->{StegBut}->Top($height - 40);
+	$self->{uStegBut}->Left($width - 140);
+	$self->{uStegBut}->Top($height - 40);
 
 	return 0;
 }
