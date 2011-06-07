@@ -15,16 +15,15 @@ our $ver = '0.0.2';
 my $ChildCount = -1;
 my $Window;
 my %file;
+my %icon;
 my @filter=("BMP image files", "*.bmp", "WAV audio files", "*.wav");
-my $def_f;
+my $t;
 
 for (my $i = 0; $i < scalar(@filter)/2; $i++) {
-	$def_f .= "$filter[($i*2+1)];";
+	$t .= "$filter[($i*2+1)];";
 }
 
-push (@filter, ("All supported types", $def_f));
-
-$def_f = ((scalar(@filter)/2)-1);
+push (@filter, ("All supported types", $t));
 
 my $Menu = Win32::GUI::MakeMenu(
 	"&File"		=> "File",
@@ -68,8 +67,12 @@ sub NewChild {
 	my $Child = $Window->{Client}->AddMDIChild (
 		-name			=> "Child".++$ChildCount,
 		-onActivate		=> sub { print "Activate\n"; },
-		-onDeactivate		=> sub { print "Deactivate\n"; },
-		-onTerminate		=> sub { print "Terminate\n";},
+		-onDeactivate	=> sub { print "Deactivate\n"; },
+		-onTerminate	=> sub { print "Terminate\n";},
+		-width			=> 780,
+		-height			=> 540,
+		-minwidth		=> 400,
+		-minheight		=> 250,
 	) or die "Child";
 
 	$Child->AddTextfield(
@@ -96,6 +99,22 @@ sub NewChild {
 		-readonly=> 1,
 	);
 
+	# my $icon{$Child} = new Win32::GUI::Window (
+		# -parent      => $Child,
+		# -name        => "ChildWin",
+		# -pos         => [0, 0],
+		# -size        => [200, 200],
+		# -popstyle    => WS_CAPTION | WS_SIZEBOX,
+		# -pushstyle   => WS_CHILD | WS_CLIPCHILDREN,
+		# -pushexstyle => WS_EX_CLIENTEDGE,
+		# -class       => $WC,
+		# -hscroll     => 1,
+		# -vscroll     => 1,
+		# -onScroll    => \&Scroll,
+		# -onResize    => sub {&Resize($bitmap,@_)},
+		# -onPaint     => sub {&Paint($memdc,@_)},
+	# );
+
 	$Child->AddButton(
 		-name	=> "StegBut",
 		-text	=> "Записать в файл",
@@ -119,11 +138,13 @@ sub NewChild {
 	while (!$file{$Child}) {
 		$file{$Child} = $Child->GetOpenFileName(
 		-filter =>\@filter,
-		-difaultfilter => 2,
+		-defaultfilter => ((scalar(@filter)/2)-1),
 		-filemustexist => 1,
 		-pathmustexist => 1,
 		);
 	}
+
+	print getExtension($file{$Child})."\n";
 
 	return 0;
 }
@@ -139,13 +160,19 @@ sub ChildSize {
 	my $self = shift;
 	my ($width, $height) = ($self->GetClientRect())[2..3];
 
-	$self->{UnSteg}->Left(($width / 2) + 5);
-	$self->{UnSteg}->Resize((($width / 2) - 15), ($height - 60));
-	$self->{Steg}->Resize((($width / 2) - 15), ($height - 60));
-	$self->{StegBut}->Left(($width / 2) - 110);
+	$self->{UnSteg}->Left(($width - 150) / 2 + 5);
+	$self->{UnSteg}->Resize((($width - 150) / 2 - 15), ($height - 60));
+	$self->{Steg}->Resize((($width - 150) / 2 - 15), ($height - 60));
+	$self->{StegBut}->Left(($width - 150) / 2 - 110);
 	$self->{StegBut}->Top($height - 40);
-	$self->{uStegBut}->Left($width - 140);
+	$self->{uStegBut}->Left($width - 150 - 140);
 	$self->{uStegBut}->Top($height - 40);
 
 	return 0;
+}
+
+sub getExtension ($) {
+	my $file = shift;
+	my $i = rindex($file, '.')+1;
+	return substr($file, $i);
 }
