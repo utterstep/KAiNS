@@ -17,7 +17,7 @@ print "1. Write to file\n2. Read from file\n\n0. Exit\n\nEnter what do you want 
 
 chomp ($choice = <>);
 
-goto START if ($choice !~ /[0-2]{1}/);
+goto START if ($choice !~ /[0-3]{1}/);
 
 if ($choice == 1) {
 	clear;
@@ -40,4 +40,13 @@ elsif ($choice == 2) {
 	clear;
 	$time = time - $time;
 	print "There was:\n$text\n\nDone in $time seconds.\n";
+}
+
+
+elsif ($choice == 3) {
+	$time = time;
+	@text = isContainerWav ("out.wav");
+	clear;
+	$time = time - $time;
+	print "@text\n;"
 }

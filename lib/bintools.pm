@@ -8,7 +8,6 @@ sub str2bin ($) {
 	for (my $i=0; $i <= $#t; $i++) {
 		$bin .= substr(dec2bin(ord($t[$i])), 24, 8);
 	}
-	$time_s2b = time - $time_s2b;
 	return split('', $bin);
 }
 

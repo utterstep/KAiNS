@@ -14,11 +14,11 @@ sub clear {
 START:
 
 clear;
-print "1. Write to file\n2. Read from file\n\n0. Exit\n\nEnter what do you want to do: ";
+print "1. Write to file\n2. Read from file\n3. Define if file contains anything\n\n0. Exit\n\nEnter what do you want to do: ";
 
 chomp ($choice = <>);
 
-goto START if ($choice !~ /[0-2]{1}/);
+goto START if ($choice !~ /[0-3]{1}/);
 
 if ($choice == 1) {
 	clear;
@@ -40,4 +40,14 @@ elsif ($choice == 2) {
 	clear;
 	$time = time - $time;
 	print "There was:\n$text\n\nDone in $time seconds.\n;"
+}
+
+elsif ($choice == 3) {
+	print "Enter name of file: ";
+	chomp ($file=<>);
+	$time = time;
+	@text = isContainerBmp ($file);
+	clear;
+	$time = time - $time;
+	print "@text\n;"
 }

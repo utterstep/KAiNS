@@ -16,6 +16,46 @@ sub getFragSize ($) {
 	return $size;
 }
 
+sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTED, IS_FILE_CONTAINER)
+	open (READ, '<:raw', $_[0]);
+
+	my $t = '';
+	my $b_text = '';
+	my $m_size = 0;
+	my $text = '';
+
+	sysseek (READ, 44, SEEK_SET);
+	sysread (READ, $t, 8+(6*4));
+	sysseek (READ, 0, 0);
+	close READ;
+
+	@text = split ('', $t);
+
+	for ($i=0; $i < 8; $i++) {
+		my @here = byte2bin($text[$i*2]);
+		$m_size .= join ('', @here[4..7]);
+	}
+
+	my $size = (stat($_[0]))[7]-44;
+	$m_size = (oct ('0b' . $m_size))*2 + 8;
+
+	return (0, 0, 0) if (($m_size > $size) || ($m_size < 8+(6*4)));
+
+	for ($i = 8; $i < 20; $i++) {
+		my @here = byte2bin($text[$i*2]);
+		$b_text .= join('', @here[4..7]);
+	}
+
+	for ($i = 0; $i < 48; $i+=8) {
+		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
+	} print $text;
+
+	if ($text =~ 'BCNS') {
+		return (1, substr($text, 4, 1), substr($text, 5, 1));
+	}
+	else { return (0, 0, 0) }
+}
+
 sub write2Wav ($$) {
 	open (OUT, "+<:raw", $_[1]);
 
@@ -70,18 +110,16 @@ sub readWav ($) {
 
 	$m_size = (oct ('0b' . $m_size))*2 + 8;
 
-	for ($i = 8; $i <= $m_size; $i++) {
+	for ($i = 8; $i < $m_size; $i++) {
 		my @here = byte2bin($text[$i*2]);
 		$b_text .= join('', @here[4..7]);
 	}
 	$size = length($b_text);
-	for ($i = 0; $i <= $size; $i+=8) {
+	for ($i = 0; $i < $size; $i+=8) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
-	sysseek (READ, 0, SEEK_SET);
-	close READ;
 
-	return substr($text, 0, -2);
+	return $text;
 }
 
 1;

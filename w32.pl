@@ -11,6 +11,7 @@ require 'bintools.pm'; #loading module for binary op's
 
 require 'wav_steg.pm'; #...module for wav...
 require 'bmp_steg.pm'; #and bmp steganorgaphy
+require 'crypt.pm';
 
 our $ver = '0.0.2';
 
@@ -107,9 +108,9 @@ sub NewChild {
 		-name	=> "txtPass",
 		-font	=> $font,
 		-password => 1,
-		-readonly => 0,
+		-readonly => 1,
 		-top	=> 50,
-		-width	=> 150,
+		-width	=> 140,
 		-height	=> 20,
 		-prompt	=> "Пароль: ",
 	);
@@ -129,12 +130,21 @@ sub NewChild {
 		# -onResize    => sub {&Resize($bitmap,@_)},
 		# -onPaint     => sub {&Paint($memdc,@_)},
 	# );
+
+	$Child->AddCheckbox(
+		-name	=> "chkPass",
+		-text	=> "Зашифровать сообщение",
+		-top	=> 10,
+		-onClick=> sub {$Child->{txtPass}->SetReadOnly(($Child->{chkPass}->Checked() ^ 1)) },
+	);
+
 	$Child->AddButton(
 		-name	=> "btnSteg",
 		-text	=> "Записать в файл",
 		-width	=> 110,
 		-height	=> 30,
 		-font	=> $font,
+		-onClick=> sub { Steg($Child) },
 	);
 
 	$Child->AddButton(
@@ -155,14 +165,6 @@ sub NewChild {
 		-onClick=> sub { fileSelect($Child) },
 	);
 
-	$Child->AddCheckbox(
-		-name	=> "chkPass",
-		-text	=> "Зашифровать сообщение",
-		-font	=> $font,
-		-top	=> 10,
-		-onClick=> sub { $Child->{txtPass}->Change(-readonly => 1) },
-	);
-
 	$Child->Change(
 		-onResize => \&ChildSize,
 	);
@@ -171,8 +173,6 @@ sub NewChild {
 	while (!$file{$Child}) {
 		fileSelect($Child);
 	}
-
-	$Child->{Steg}->SetLimitText(eval "byteLimit$ext{$Child}($file{$Child})");
 
 	return 0;
 }
@@ -214,4 +214,18 @@ sub fileSelect ($) {
 	$ext{$self} = ucfirst(getExtension($file{$self}));
 
 	$self->Change(-text => $file{$self},);
+	$self->{Steg}->SetLimitText(eval "byteLimit$ext{$self}('$file{$self}')");
+}
+
+sub Steg ($) {
+	my $self = shift;
+	my $text = "BCNS".($self->{chkPass}->Checked())."0";
+	my $t = ($self->{Steg}->Text());
+
+	if ($self->{chkPass}->Checked()) {
+		$t = xcrypt($self->{txtPass}->Text(), $t);
+	}
+	$text .= $t;
+
+	eval("write2$ext{$self}('$text','$file{$self}')");
 }
