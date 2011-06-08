@@ -1,3 +1,9 @@
+sub byteLimitWav ($) {
+	my $file = shift;
+
+	return int(((stat($file))[7]-44)/4)-7;
+}
+
 sub getFragSize ($) {
 	open (IN, "<:raw", $_[0]);
 
@@ -8,12 +14,6 @@ sub getFragSize ($) {
 	close IN;
 
 	return $size;
-}
-
-sub byteLimitWav ($) {
-	my $file = shift;
-
-	return int(((stat($file))[7]-44)/4)-7;
 }
 
 sub write2Wav ($$) {

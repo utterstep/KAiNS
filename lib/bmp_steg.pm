@@ -1,3 +1,10 @@
+sub byteLimitBmp ($) {
+	my $file = shift;
+	my $offset = getOffsetBmp($file);
+
+	return int(((stat($file))[7]-$offset)/4)-7;
+}
+
 sub getOffsetBmp ($) {
 	open (IN, "<:raw", $_[0]);
 
@@ -9,13 +16,6 @@ sub getOffsetBmp ($) {
 	close IN;
 
 	return $offset;
-}
-
-sub byteLimitBmp ($) {
-	my $file = shift;
-	my $offset = getOffsetBmp($file);
-
-	return int(((stat($file))[7]-$offset)/4)-7;
 }
 
 sub write2Bmp ($$) {
