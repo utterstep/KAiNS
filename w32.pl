@@ -2,7 +2,9 @@
 
 use warnings;
 use strict;
-use Win32::GUI();
+use Win32::GUI(), qw(	SB_THUMBTRACK SB_LINEDOWN SB_LINEUP
+						WS_CAPTION WS_SIZEBOX WS_CHILD
+						WS_CLIPCHILDREN WS_EX_CLIENTEDGE RGN_DIFF);
 use lib qw(./lib);
 
 require 'bintools.pm'; #loading module for binary op's
@@ -15,6 +17,7 @@ our $ver = '0.0.2';
 my $ChildCount = -1;
 my $Window;
 my %file;
+my %ext;
 my %icon;
 my @filter=("BMP image files", "*.bmp", "WAV audio files", "*.wav");
 my $t;
@@ -46,7 +49,7 @@ my $font = Win32::GUI::Font->new(
 ); 
 
 $Window = new Win32::GUI::MDIFrame (
-	-title  => "KAinS by Utter, ver$ver",
+	-title  => "KAinS by Utter, ver $ver",
 	-minwidth  => 800,
 	-minheight => 600,
 	-name   => "Main",
@@ -59,7 +62,7 @@ $Window->AddMDIClient(
 	-windowmenu => $Menu->{Window}->{-handle},
 ) or die "Client";
 
-$Window->Resize(805, 620);
+$Window->Resize(900, 680);
 $Window->Show();
 Win32::GUI::Dialog();
 
@@ -69,8 +72,8 @@ sub NewChild {
 		-onActivate		=> sub { print "Activate\n"; },
 		-onDeactivate	=> sub { print "Deactivate\n"; },
 		-onTerminate	=> sub { print "Terminate\n";},
-		-width			=> 780,
-		-height			=> 540,
+		-width			=> 800,
+		-height			=> 600,
 		-minwidth		=> 400,
 		-minheight		=> 250,
 	) or die "Child";
@@ -84,19 +87,31 @@ sub NewChild {
 		-height	=> 490,
 		-multiline => 1,
 		-vscroll=> 1,
-		-onChange => \&Text
 	);
 
+	$Child->AddTimer("TextTimer".$ChildCount, 250);
+
 	$Child->AddTextfield(
-		-name	=> "UnSteg",
+		-name	=> "unSteg",
 		-font	=> $font,
 		-left	=> 400,
 		-top	=> 10,
 		-width	=> 380,
 		-height	=> 490,
 		-multiline => 1,
-		-vscroll=> 1,
-		-readonly=> 1,
+		-vscroll => 1,
+		-readonly => 1,
+	);
+
+	$Child->AddTextfield(
+		-name	=> "txtPass",
+		-font	=> $font,
+		-password => 1,
+		-readonly => 0,
+		-top	=> 50,
+		-width	=> 150,
+		-height	=> 20,
+		-prompt	=> "Пароль: ",
 	);
 
 	# my $icon{$Child} = new Win32::GUI::Window (
@@ -114,9 +129,8 @@ sub NewChild {
 		# -onResize    => sub {&Resize($bitmap,@_)},
 		# -onPaint     => sub {&Paint($memdc,@_)},
 	# );
-
 	$Child->AddButton(
-		-name	=> "StegBut",
+		-name	=> "btnSteg",
 		-text	=> "Записать в файл",
 		-width	=> 110,
 		-height	=> 30,
@@ -124,34 +138,41 @@ sub NewChild {
 	);
 
 	$Child->AddButton(
-		-name	=> "uStegBut",
+		-name	=> "btnUSteg",
 		-text	=> "Прочитать из файла",
 		-width	=> 130,
 		-height	=> 30,
 		-font	=> $font,
+		-onClick=> sub { $Child->{unSteg}->Text(eval("read$ext{$Child}('$file{$Child}')")) },
 	);
 
-	# Force a resize.
-	$Child->Change(-onResize => \&ChildSize, );
+	$Child->AddButton(
+		-name	=> "btnChangeFile",
+		-text	=> "Выбрать другой файл",
+		-width	=> 140,
+		-height	=> 30,
+		-font	=> $font,
+		-onClick=> sub { fileSelect($Child) },
+	);
+
+	$Child->AddCheckbox(
+		-name	=> "chkPass",
+		-text	=> "Зашифровать сообщение",
+		-font	=> $font,
+		-top	=> 10,
+		-onClick=> sub { $Child->{txtPass}->Change(-readonly => 1) },
+	);
+
+	$Child->Change(
+		-onResize => \&ChildSize,
+	);
 	ChildSize($Child);
 
 	while (!$file{$Child}) {
-		$file{$Child} = $Child->GetOpenFileName(
-		-filter =>\@filter,
-		-defaultfilter => ((scalar(@filter)/2)-1),
-		-filemustexist => 1,
-		-pathmustexist => 1,
-		);
+		fileSelect($Child);
 	}
 
-	print getExtension($file{$Child})."\n";
-
-	return 0;
-}
-
-sub Text {
-	my $self = shift;
-	print $self->GetLineCount();
+	$Child->{Steg}->SetLimitText(eval "byteLimit$ext{$Child}($file{$Child})");
 
 	return 0;
 }
@@ -160,13 +181,17 @@ sub ChildSize {
 	my $self = shift;
 	my ($width, $height) = ($self->GetClientRect())[2..3];
 
-	$self->{UnSteg}->Left(($width - 150) / 2 + 5);
-	$self->{UnSteg}->Resize((($width - 150) / 2 - 15), ($height - 60));
+	$self->{unSteg}->Left(($width - 150) / 2 + 5);
+	$self->{unSteg}->Resize((($width - 150) / 2 - 15), ($height - 60));
 	$self->{Steg}->Resize((($width - 150) / 2 - 15), ($height - 60));
-	$self->{StegBut}->Left(($width - 150) / 2 - 110);
-	$self->{StegBut}->Top($height - 40);
-	$self->{uStegBut}->Left($width - 150 - 140);
-	$self->{uStegBut}->Top($height - 40);
+	$self->{btnSteg}->Left(($width - 150) / 2 - 110);
+	$self->{btnSteg}->Top($height - 40);
+	$self->{btnUSteg}->Left($width - 150 - 140);
+	$self->{btnUSteg}->Top($height - 40);
+	$self->{btnChangeFile}->Left($width - 150);
+	$self->{btnChangeFile}->Top($height - 40);
+	$self->{chkPass}->Left($width - 150);
+	$self->{txtPass}->Left($width - 150);
 
 	return 0;
 }
@@ -175,4 +200,18 @@ sub getExtension ($) {
 	my $file = shift;
 	my $i = rindex($file, '.')+1;
 	return substr($file, $i);
+}
+
+sub fileSelect ($) {
+	my $self = shift;
+	$file{$self} = $self->GetOpenFileName(
+		-filter =>\@filter,
+		-defaultfilter => ((scalar(@filter)/2)-1),
+		-filemustexist => 1,
+		-pathmustexist => 1,
+	);
+	$file{$self} =~ s|\\|/|g;
+	$ext{$self} = ucfirst(getExtension($file{$self}));
+
+	$self->Change(-text => $file{$self},);
 }

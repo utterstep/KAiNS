@@ -11,6 +11,13 @@ sub getOffsetBmp ($) {
 	return $offset;
 }
 
+sub byteLimitBmp ($) {
+	my $file = shift;
+	my $offset = getOffsetBmp($file);
+
+	return int(((stat($file))[7]-$offset)/4)-7;
+}
+
 sub write2Bmp ($$) {
 	open (OUT, "+<:raw", $_[1]);
 
@@ -73,8 +80,6 @@ sub readBmp ($) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
 
-	sysseek (READ, 0, 0);
-	close READ;
 	return substr($text, 0, -2);
 }
 
