@@ -153,7 +153,7 @@ sub NewChild {
 		-width	=> 130,
 		-height	=> 30,
 		-font	=> $font,
-		-onClick=> sub { $Child->{unSteg}->Text(eval("read$ext{$Child}('$file{$Child}')")) },
+		-onClick=> sub { UnSteg($Child) },
 	);
 
 	$Child->AddButton(
@@ -170,7 +170,7 @@ sub NewChild {
 	);
 	ChildSize($Child);
 
-	while (!$file{$Child}) {
+	while ($file{$Child} !~ '.') {
 		fileSelect($Child);
 	}
 
@@ -204,17 +204,21 @@ sub getExtension ($) {
 
 sub fileSelect ($) {
 	my $self = shift;
+	my $temp = $file{$self};
 	$file{$self} = $self->GetOpenFileName(
 		-filter =>\@filter,
 		-defaultfilter => ((scalar(@filter)/2)-1),
 		-filemustexist => 1,
 		-pathmustexist => 1,
 	);
+	if ($file{$self} !~ '.') { $file{$self} = $temp } 
 	$file{$self} =~ s|\\|/|g;
 	$ext{$self} = ucfirst(getExtension($file{$self}));
 
 	$self->Change(-text => $file{$self},);
-	$self->{Steg}->SetLimitText(eval "byteLimit$ext{$self}('$file{$self}')");
+	if ($file{$self} =~ '.') { $self->{Steg}->SetLimitText(eval "byteLimit$ext{$self}('$file{$self}')") }
+	$self->{Steg}->Text('');
+	$self->{unSteg}->Text('');
 }
 
 sub Steg ($) {
@@ -229,3 +233,13 @@ sub Steg ($) {
 
 	eval("write2$ext{$self}('$text','$file{$self}')");
 }
+
+sub UnSteg ($) {
+	my $self = shift;
+	if ((eval("isContainer$ext{$self}('$file{$self}')"))[0]) {
+		$self->{unSteg}->Text(eval("read$ext{$self}('$file{$self}')"));
+	}
+	else {
+		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000)
+	}
+}	
