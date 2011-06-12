@@ -16,12 +16,8 @@ require 'crypt.pm';
 our $ver = '0.0.2';
 
 my $ChildCount = -1;
-my $Window;
-my %file;
-my %ext;
-my %icon;
+my ($Window, %file, %ext, %icon, $t, $asking, %pass);
 my @filter=("BMP image files", "*.bmp", "WAV audio files", "*.wav");
-my $t;
 
 for (my $i = 0; $i < scalar(@filter)/2; $i++) {
 	$t .= "$filter[($i*2+1)];";
@@ -55,6 +51,7 @@ $Window = new Win32::GUI::MDIFrame (
 	-minheight => 600,
 	-name   => "Main",
 	-menu   => $Menu,
+	-pos	=> [200, 200]
 ) or die "Window"; 
 
 $Window->AddMDIClient(
@@ -63,9 +60,54 @@ $Window->AddMDIClient(
 	-windowmenu => $Menu->{Window}->{-handle},
 ) or die "Client";
 
+#######password input window#######
+
+my $dialog = Win32::GUI::DialogBox->new(
+	-name		=> "passPrompt",
+	-dialogui	=> 1,
+	-resizable	=> 0,
+	-size		=> [205, 200],
+	-topmost	=> 1,
+	-pos		=> [500, 500],
+);
+
+$dialog->AddTextfield(
+	-name	=> "txtPassAsk",
+	-font	=> $font,
+	-password => 1,
+	-top	=> 50,
+	-left	=> 50,
+	-width	=> 145,
+	-height	=> 20,
+	-prompt	=> ["Пароль:", -45],
+);
+
+$dialog->AddButton(
+	-name	=> "btnPass",
+	-text	=> "Расшифровать сообщение",
+	-width	=> 200,
+	-height	=> 30,
+	-font	=> $font,
+	-onClick=> \&Pass,
+);
+
+$dialog->AddLabel(
+	-name	=> 'lblPassNote',
+	-text	=> 'Примечание: при вводе неверного пароля вы получите неверное сообщение. Ваш К.О.',
+	-sunken => 1,
+	-pos	=> [1, 100],
+	-size	=> [195, 80],
+	-align	=> 'center',
+);
+
 $Window->Resize(900, 680);
 $Window->Show();
 Win32::GUI::Dialog();
+
+sub passPrompt_Terminate {
+	$dialog->Hide();
+	return 0;
+}
 
 sub NewChild {
 	my $Child = $Window->{Client}->AddMDIChild (
@@ -213,7 +255,7 @@ sub fileSelect ($) {
 	);
 	if ($file{$self} !~ '.') { $file{$self} = $temp } 
 	$file{$self} =~ s|\\|/|g;
-	$ext{$self} = ucfirst(getExtension($file{$self}));
+	$ext{$self} = ucfirst(lc(getExtension($file{$self})));
 
 	$self->Change(-text => $file{$self},);
 	if ($file{$self} =~ '.') { $self->{Steg}->SetLimitText(eval "byteLimit$ext{$self}('$file{$self}')") }
@@ -236,10 +278,25 @@ sub Steg ($) {
 
 sub UnSteg ($) {
 	my $self = shift;
-	if ((eval("isContainer$ext{$self}('$file{$self}')"))[0]) {
-		$self->{unSteg}->Text(eval("read$ext{$self}('$file{$self}')"));
+	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
+	if ($probe[0]) {
+		if ($probe[1]) {
+			$asking = $self;
+			$dialog->Show();
+		}
+		else {
+			$self->{unSteg}->Text(eval("read$ext{$self}('$file{$self}')"));
+		}
 	}
 	else {
-		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000)
+		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000|0x0030)
 	}
-}	
+}
+
+sub Pass {
+	$pass{$asking} = $dialog->{txtPassAsk}->Text();
+	$dialog->{txtPassAsk}->Text('');
+	my $text = xcrypt($pass{$asking}, eval("read$ext{$asking}('$file{$asking}')"));
+	$asking->{unSteg}->Text($text);
+	$dialog->Hide();
+}

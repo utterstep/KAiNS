@@ -25,7 +25,7 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	my $text = '';
 
 	sysseek (READ, 44, SEEK_SET);
-	sysread (READ, $t, 8+(6*4));
+	sysread (READ, $t, 8+(6*8));
 	sysseek (READ, 0, 0);
 	close READ;
 
@@ -119,7 +119,7 @@ sub readWav ($) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
 
-	return $text;
+	return substr($text, 6);
 }
 
 1;

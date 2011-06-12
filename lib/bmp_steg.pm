@@ -121,7 +121,7 @@ sub readBmp ($) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
 
-	return $text;
+	return substr($text, 6);
 }
 
 1;
