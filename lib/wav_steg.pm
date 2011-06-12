@@ -39,7 +39,7 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	my $size = (stat($_[0]))[7]-44;
 	$m_size = (oct ('0b' . $m_size))*2 + 8;
 
-	return (0, 0, 0) if (($m_size > $size) || ($m_size < 8+(6*4)));
+	return (0, 0, 0) if ($m_size > $size);
 
 	for ($i = 8; $i < 20; $i++) {
 		my @here = byte2bin($text[$i*2]);
@@ -48,7 +48,7 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 
 	for ($i = 0; $i < 48; $i+=8) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
-	} print $text;
+	}
 
 	if ($text =~ 'BCNS') {
 		return (1, substr($text, 4, 1), substr($text, 5, 1));

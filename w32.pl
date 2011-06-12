@@ -6,6 +6,8 @@ use Win32::GUI(), qw(	SB_THUMBTRACK SB_LINEDOWN SB_LINEUP
 						WS_CAPTION WS_SIZEBOX WS_CHILD
 						WS_CLIPCHILDREN WS_EX_CLIENTEDGE RGN_DIFF);
 use lib qw(./lib);
+use File::Copy;
+use locale;
 
 require 'bintools.pm'; #loading module for binary op's
 
@@ -13,7 +15,7 @@ require 'wav_steg.pm'; #...module for wav...
 require 'bmp_steg.pm'; #and bmp steganorgaphy
 require 'crypt.pm';
 
-our $ver = '0.0.2';
+our $ver = '0.1.0';
 
 my $ChildCount = -1;
 my ($Window, %file, %ext, %icon, $t, $asking, %pass);
@@ -78,7 +80,7 @@ $dialog->AddTextfield(
 	-top	=> 50,
 	-left	=> 50,
 	-width	=> 145,
-	-height	=> 20,
+	-height	=> 23,
 	-prompt	=> ["Пароль:", -45],
 );
 
@@ -89,6 +91,7 @@ $dialog->AddButton(
 	-height	=> 30,
 	-font	=> $font,
 	-onClick=> \&Pass,
+	-default=> 1,
 );
 
 $dialog->AddLabel(
@@ -102,6 +105,7 @@ $dialog->AddLabel(
 
 $Window->Resize(900, 680);
 $Window->Show();
+NewChild();
 Win32::GUI::Dialog();
 
 sub passPrompt_Terminate {
@@ -129,7 +133,7 @@ sub NewChild {
 		-width	=> 380,
 		-height	=> 490,
 		-multiline => 1,
-		-vscroll=> 1,
+		-vscroll => 1,
 	);
 
 	$Child->AddTimer("TextTimer".$ChildCount, 250);
@@ -153,25 +157,9 @@ sub NewChild {
 		-readonly => 1,
 		-top	=> 50,
 		-width	=> 140,
-		-height	=> 20,
+		-height	=> 23,
 		-prompt	=> "Пароль: ",
 	);
-
-	# my $icon{$Child} = new Win32::GUI::Window (
-		# -parent      => $Child,
-		# -name        => "ChildWin",
-		# -pos         => [0, 0],
-		# -size        => [200, 200],
-		# -popstyle    => WS_CAPTION | WS_SIZEBOX,
-		# -pushstyle   => WS_CHILD | WS_CLIPCHILDREN,
-		# -pushexstyle => WS_EX_CLIENTEDGE,
-		# -class       => $WC,
-		# -hscroll     => 1,
-		# -vscroll     => 1,
-		# -onScroll    => \&Scroll,
-		# -onResize    => sub {&Resize($bitmap,@_)},
-		# -onPaint     => sub {&Paint($memdc,@_)},
-	# );
 
 	$Child->AddCheckbox(
 		-name	=> "chkPass",
@@ -272,8 +260,23 @@ sub Steg ($) {
 		$t = xcrypt($self->{txtPass}->Text(), $t);
 	}
 	$text .= $t;
+	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
 
-	eval("write2$ext{$self}('$text','$file{$self}')");
+	if ($probe[0]) {
+		my $copy = $file{$self};
+		substr ($copy, rindex ($copy, '.')) = '-copy';
+		$copy .= lc(".$ext{$self}");
+		my $act = Win32::GUI::MessageBox($self, "Файл содержит стеганографическую информацию.\nЗаписать новое сообщение в файл $copy?\n\nПри записи в исходный файл данные, находящиеся в нем сейчас, будут утеряны.", "Файл содержит данные", 0x0003|0x0030);
+		if ($act == 6) { 
+			copy($file{$self},$copy) or die "Copy failed: $!";
+			eval("write2$ext{$self}('$text','$copy')");
+			$file{$self} = $copy;
+			$self->Change( -text => $file{$self} );
+		}
+		elsif ($act == 7) { eval("write2$ext{$self}('$text','$file{$self}')"); }
+		else { 1; }
+	}
+	else { eval("write2$ext{$self}('$text','$file{$self}')"); }
 }
 
 sub UnSteg ($) {
@@ -289,7 +292,7 @@ sub UnSteg ($) {
 		}
 	}
 	else {
-		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000|0x0030)
+		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000|0x0040)
 	}
 }
 
