@@ -21,6 +21,14 @@ my $ChildCount = -1;
 my ($Window, %file, %ext, %icon, $t, $asking, %pass);
 my @filter=("BMP image files", "*.bmp", "WAV audio files", "*.wav");
 
+my %message = (
+	"000" => "Этот файл не содержит стеганографических данных",
+	"100" => "Этот файл содержит текстовое сообщение",
+	"101" => "",
+	"110" => "Этот файл содержит защищенное паролем текстовое сообщение",
+	"111" => "",
+);
+
 for (my $i = 0; $i < scalar(@filter)/2; $i++) {
 	$t .= "$filter[($i*2+1)];";
 }
@@ -119,19 +127,29 @@ sub NewChild {
 		-onActivate		=> sub { print "Activate\n"; },
 		-onDeactivate	=> sub { print "Deactivate\n"; },
 		-onTerminate	=> sub { print "Terminate\n";},
-		-width			=> 800,
+		-width			=> 880,
 		-height			=> 600,
-		-minwidth		=> 400,
-		-minheight		=> 250,
 	) or die "Child";
+	
+	$Child->AddLabel(
+		-name	=> "lblSteg",
+		-text	=> 'Введите текст для записи, затем нажмите "Записать в файл":',
+		-pos	=> [10, 10],
+	);
+	
+	$Child->AddLabel(
+		-name	=> "lblUSteg",
+		-text	=> 'Кнопкой "Прочитать из файла" можно извлечь Ваше сообщение:',
+		-pos	=> [10, 10],
+	);
 
 	$Child->AddTextfield(
 		-name	=> "Steg",
 		-font	=> $font,
 		-left	=> 10,
-		-top	=> 10,
+		-top	=> 30,
 		-width	=> 380,
-		-height	=> 490,
+		-height	=> 450,
 		-multiline => 1,
 		-vscroll => 1,
 	);
@@ -142,9 +160,9 @@ sub NewChild {
 		-name	=> "unSteg",
 		-font	=> $font,
 		-left	=> 400,
-		-top	=> 10,
+		-top	=> 30,
 		-width	=> 380,
-		-height	=> 490,
+		-height	=> 450,
 		-multiline => 1,
 		-vscroll => 1,
 		-readonly => 1,
@@ -155,16 +173,15 @@ sub NewChild {
 		-font	=> $font,
 		-password => 1,
 		-readonly => 1,
-		-top	=> 50,
+		-left	=> 10,
 		-width	=> 140,
 		-height	=> 23,
-		-prompt	=> "Пароль: ",
 	);
 
 	$Child->AddCheckbox(
 		-name	=> "chkPass",
-		-text	=> "Зашифровать сообщение",
-		-top	=> 10,
+		-text	=> "Зашифровать сообщение. Пароль:",
+		-left	=> 13,
 		-onClick=> sub {$Child->{txtPass}->SetReadOnly(($Child->{chkPass}->Checked() ^ 1)) },
 	);
 
@@ -194,6 +211,18 @@ sub NewChild {
 		-font	=> $font,
 		-onClick=> sub { fileSelect($Child) },
 	);
+	
+	$Child->AddLabel(
+		-name	=> "lblMaxSize",
+		-top	=> 100,
+		-size	=> [150, 60]		
+	);
+	
+	$Child->AddLabel(
+		-name	=> "lblFileInfo",
+		-top	=> 30,
+		-size	=> [150, 60],
+	);
 
 	$Child->Change(
 		-onResize => \&ChildSize,
@@ -203,25 +232,6 @@ sub NewChild {
 	while ($file{$Child} !~ '.') {
 		fileSelect($Child);
 	}
-
-	return 0;
-}
-
-sub ChildSize {
-	my $self = shift;
-	my ($width, $height) = ($self->GetClientRect())[2..3];
-
-	$self->{unSteg}->Left(($width - 150) / 2 + 5);
-	$self->{unSteg}->Resize((($width - 150) / 2 - 15), ($height - 60));
-	$self->{Steg}->Resize((($width - 150) / 2 - 15), ($height - 60));
-	$self->{btnSteg}->Left(($width - 150) / 2 - 110);
-	$self->{btnSteg}->Top($height - 40);
-	$self->{btnUSteg}->Left($width - 150 - 140);
-	$self->{btnUSteg}->Top($height - 40);
-	$self->{btnChangeFile}->Left($width - 150);
-	$self->{btnChangeFile}->Top($height - 40);
-	$self->{chkPass}->Left($width - 150);
-	$self->{txtPass}->Left($width - 150);
 
 	return 0;
 }
@@ -246,9 +256,15 @@ sub fileSelect ($) {
 	$ext{$self} = ucfirst(lc(getExtension($file{$self})));
 
 	$self->Change(-text => $file{$self},);
-	if ($file{$self} =~ '.') { $self->{Steg}->SetLimitText(eval "byteLimit$ext{$self}('$file{$self}')") }
+	my $max_l = (eval "byteLimit$ext{$self}('$file{$self}')");
+	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
+	if ($file{$self} =~ '.') { $self->{Steg}->SetLimitText($max_l) }
 	$self->{Steg}->Text('');
 	$self->{unSteg}->Text('');
+	$self->{lblMaxSize}->Change( -text	=> "В этот файл можно записать информацию, объем которой не превышает: $max_l символов, или ". (int ($max_l/1024)) . " Kb");
+	$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
+	
+	return 0;
 }
 
 sub Steg ($) {
@@ -277,6 +293,11 @@ sub Steg ($) {
 		else { 1; }
 	}
 	else { eval("write2$ext{$self}('$text','$file{$self}')"); }
+	
+	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
+	$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
+	
+	return 0;
 }
 
 sub UnSteg ($) {
@@ -294,6 +315,8 @@ sub UnSteg ($) {
 	else {
 		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000|0x0040)
 	}
+	
+	return 0;
 }
 
 sub Pass {
@@ -302,4 +325,30 @@ sub Pass {
 	my $text = xcrypt($pass{$asking}, eval("read$ext{$asking}('$file{$asking}')"));
 	$asking->{unSteg}->Text($text);
 	$dialog->Hide();
+	
+	return 0;
+}
+
+sub ChildSize {
+	my $self = shift;
+	my ($width, $height) = ($self->GetClientRect())[2..3];
+
+	$self->{unSteg}->Left(($width - 150) / 2 + 5);
+	$self->{unSteg}->Resize((($width - 150) / 2 - 15), ($height - 80));
+	$self->{Steg}->Resize((($width - 150) / 2 - 15), ($height - 90));
+	$self->{lblSteg}->Resize((($width - 150) / 2 - 5), 20);
+	$self->{lblUSteg}->Resize((($width - 150) / 2 - 5), 20);
+	$self->{lblMaxSize}->Left($width - 150);
+	$self->{lblFileInfo}->Left($width - 150);
+	$self->{lblUSteg}->Left(($width - 150) / 2 + 5);
+	$self->{btnSteg}->Left(($width - 150) / 2 - 114);
+	$self->{btnSteg}->Top($height - 43);
+	$self->{btnUSteg}->Left($width - 150 - 140);
+	$self->{btnUSteg}->Top($height - 40);
+	$self->{btnChangeFile}->Left($width - 150);
+	$self->{btnChangeFile}->Top($height - 50);
+	$self->{chkPass}->Top($height - 60);
+	$self->{txtPass}->Top($height - 35);
+
+	return 0;
 }
