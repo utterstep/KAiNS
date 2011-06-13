@@ -83,6 +83,8 @@ sub write2Wav ($$) {
 	sysseek (OUT, 44, 0);
 	syswrite (OUT, $write);
 	close OUT;
+
+	return 0;
 }
 
 sub readWav ($) {

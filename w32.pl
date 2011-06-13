@@ -11,15 +11,16 @@ use locale;
 
 require 'bintools.pm'; #loading module for binary op's
 
-require 'wav_steg.pm'; #...module for wav...
-require 'bmp_steg.pm'; #and bmp steganorgaphy
+require 'wav_steg.pm'; #...module for wav,...
+require 'bmp_steg.pm'; #...bmp...
+require 'png_steg.pm'; #...and png steganography
 require 'crypt.pm';
 
 our $ver = '0.2.0';
 
 my $ChildCount = -1;
 my ($Window, %file, %ext, %icon, $t, $asking, %pass);
-my @filter=("BMP image files", "*.bmp", "WAV audio files", "*.wav");
+my @filter=("Image files", "*.bmp;*.png", "WAV audio files", "*.wav");
 
 my %message = (
 	"000" => "Этот файл не содержит стеганографических данных",
@@ -150,9 +151,9 @@ sub NewChild {
 		-name	=> "Steg",
 		-font	=> $font,
 		-left	=> 10,
-		-top	=> 30,
+		-top	=> 50,
 		-width	=> 380,
-		-height	=> 450,
+		-height	=> 420,
 		-multiline => 1,
 		-vscroll => 1,
 	);

@@ -33,7 +33,7 @@ sub isContainerBmp ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	sysseek (READ, 0, 0);
 	close READ;
 
-	@text = split ('', $t);
+	my @text = split ('', $t);
 
 	for ($i=0; $i < 16; $i++) {
 		my @here = byte2bin($text[$i]);
@@ -85,6 +85,8 @@ sub write2Bmp ($$) {
 	sysseek (OUT, $off, 0);
 	syswrite (OUT, $write);
 	close OUT;
+	
+	return 0;
 }
 
 sub readBmp ($) {
