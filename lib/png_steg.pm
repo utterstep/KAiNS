@@ -1,5 +1,3 @@
-use Imager;
-
 sub byteLimitPng ($) {
 	my $file = shift;
 	my $img = Imager->new(file => $file);

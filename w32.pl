@@ -8,6 +8,7 @@ use Win32::GUI(), qw(	SB_THUMBTRACK SB_LINEDOWN SB_LINEUP
 use lib qw(./lib);
 use File::Copy;
 use locale;
+use Imager;
 
 require 'bintools.pm'; #loading module for binary op's
 
@@ -16,7 +17,7 @@ require 'bmp_steg.pm'; #...bmp...
 require 'png_steg.pm'; #...and png steganography
 require 'crypt.pm';
 
-our $ver = '0.2.0';
+our $ver = '0.2.1';
 
 my $ChildCount = -1;
 my ($Window, %file, %ext, %icon, $t, $asking, %pass);
@@ -45,9 +46,9 @@ my $Menu = Win32::GUI::MakeMenu(
 	"   > &Next"		=> { -name => "Next",	-onClick => sub { $Window->{Client}->Next;	 } },
 	"   > &Previous"	=> { -name => "Prev",	-onClick => sub { $Window->{Client}->Previous; } },
 	"   > -"			=> 0,
-	"   > &Cascade"		=> { -name => "Cascade", -onClick => sub { $Window->{Client}->Cascade(); 0; } },
+	# "   > &Cascade"		=> { -name => "Cascade", -onClick => sub { $Window->{Client}->Cascade(); 0; } },
 	"   > Tile &Horizontally"	=> { -name => "TileH",   -onClick => sub { $Window->{Client}->Tile(1);  } },
-	"   > Tile &Vertically"		=> { -name => "TileV",   -onClick => sub { $Window->{Client}->Tile(0);  } },
+	# "   > Tile &Vertically"		=> { -name => "TileV",   -onClick => sub { $Window->{Client}->Tile(0);  } },
 	"&Help"		=> "Help",
 	"   > &About "		=> { -name => "About", -onClick => sub { 1; } },
 );
@@ -151,9 +152,9 @@ sub NewChild {
 		-name	=> "Steg",
 		-font	=> $font,
 		-left	=> 10,
-		-top	=> 50,
+		-top	=> 30,
 		-width	=> 380,
-		-height	=> 420,
+		-height	=> 450,
 		-multiline => 1,
 		-vscroll => 1,
 	);
@@ -260,7 +261,7 @@ sub fileSelect ($) {
 	$ext{$self} = ucfirst(lc(getExtension($file{$self})));
 
 	$self->Change(-text => $file{$self},);
-	my $max_l = (eval "byteLimit$ext{$self}('$file{$self}')");
+	my $max_l = eval("byteLimit$ext{$self}('$file{$self}')");
 	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
 	if ($file{$self} =~ '.') { 
 		$self->{Steg}->SetLimitText($max_l);
