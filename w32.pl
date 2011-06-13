@@ -15,7 +15,7 @@ require 'wav_steg.pm'; #...module for wav...
 require 'bmp_steg.pm'; #and bmp steganorgaphy
 require 'crypt.pm';
 
-our $ver = '0.1.0';
+our $ver = '0.2.0';
 
 my $ChildCount = -1;
 my ($Window, %file, %ext, %icon, $t, $asking, %pass);
@@ -76,8 +76,10 @@ my $dialog = Win32::GUI::DialogBox->new(
 	-name		=> "passPrompt",
 	-dialogui	=> 1,
 	-resizable	=> 0,
-	-size		=> [205, 200],
+	-text		=> "Введите пароль",
+	-size		=> [205, 170],
 	-topmost	=> 1,
+	-hashelp	=> 0,
 	-pos		=> [500, 500],
 );
 
@@ -85,8 +87,8 @@ $dialog->AddTextfield(
 	-name	=> "txtPassAsk",
 	-font	=> $font,
 	-password => 1,
-	-top	=> 50,
 	-left	=> 50,
+	-top	=> 10,
 	-width	=> 145,
 	-height	=> 23,
 	-prompt	=> ["Пароль:", -45],
@@ -97,6 +99,7 @@ $dialog->AddButton(
 	-text	=> "Расшифровать сообщение",
 	-width	=> 200,
 	-height	=> 30,
+	-top	=> 50,
 	-font	=> $font,
 	-onClick=> \&Pass,
 	-default=> 1,
@@ -106,8 +109,8 @@ $dialog->AddLabel(
 	-name	=> 'lblPassNote',
 	-text	=> 'Примечание: при вводе неверного пароля вы получите неверное сообщение. Ваш К.О.',
 	-sunken => 1,
-	-pos	=> [1, 100],
-	-size	=> [195, 80],
+	-pos	=> [1, 83],
+	-size	=> [195, 70],
 	-align	=> 'center',
 );
 
@@ -221,7 +224,7 @@ sub NewChild {
 	$Child->AddLabel(
 		-name	=> "lblFileInfo",
 		-top	=> 30,
-		-size	=> [150, 60],
+		-size	=> [150, 90],
 	);
 
 	$Child->Change(
@@ -258,11 +261,13 @@ sub fileSelect ($) {
 	$self->Change(-text => $file{$self},);
 	my $max_l = (eval "byteLimit$ext{$self}('$file{$self}')");
 	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
-	if ($file{$self} =~ '.') { $self->{Steg}->SetLimitText($max_l) }
+	if ($file{$self} =~ '.') { 
+		$self->{Steg}->SetLimitText($max_l);
+		$self->{lblMaxSize}->Change( -text	=> "В этот файл можно записать информацию, объем которой не превышает: $max_l символов, или ". (int ($max_l/1024)) . " Kb");
+		$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
+	}
 	$self->{Steg}->Text('');
 	$self->{unSteg}->Text('');
-	$self->{lblMaxSize}->Change( -text	=> "В этот файл можно записать информацию, объем которой не превышает: $max_l символов, или ". (int ($max_l/1024)) . " Kb");
-	$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
 	
 	return 0;
 }
@@ -276,6 +281,9 @@ sub Steg ($) {
 		$t = xcrypt($self->{txtPass}->Text(), $t);
 	}
 	$text .= $t;
+	
+	$text =~ s|'|\\'|g;
+	
 	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
 
 	if ($probe[0]) {
@@ -285,16 +293,17 @@ sub Steg ($) {
 		my $act = Win32::GUI::MessageBox($self, "Файл содержит стеганографическую информацию.\nЗаписать новое сообщение в файл $copy?\n\nПри записи в исходный файл данные, находящиеся в нем сейчас, будут утеряны.", "Файл содержит данные", 0x0003|0x0030);
 		if ($act == 6) { 
 			copy($file{$self},$copy) or die "Copy failed: $!";
-			eval("write2$ext{$self}('$text','$copy')");
+			eval('write2'.$ext{$self}."('".$text."','".$copy."')");
 			$file{$self} = $copy;
 			$self->Change( -text => $file{$self} );
 		}
-		elsif ($act == 7) { eval("write2$ext{$self}('$text','$file{$self}')"); }
+		elsif ($act == 7) {
+			eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')");
+		}
 		else { 1; }
 	}
-	else { eval("write2$ext{$self}('$text','$file{$self}')"); }
+	else { eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')"); }
 	
-	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
 	$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
 	
 	return 0;
@@ -339,6 +348,7 @@ sub ChildSize {
 	$self->{lblSteg}->Resize((($width - 150) / 2 - 5), 20);
 	$self->{lblUSteg}->Resize((($width - 150) / 2 - 5), 20);
 	$self->{lblMaxSize}->Left($width - 150);
+	$self->{lblMaxSize}->Top($height - 120);
 	$self->{lblFileInfo}->Left($width - 150);
 	$self->{lblUSteg}->Left(($width - 150) / 2 + 5);
 	$self->{btnSteg}->Left(($width - 150) / 2 - 114);

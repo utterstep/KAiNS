@@ -29,7 +29,7 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	sysseek (READ, 0, 0);
 	close READ;
 
-	@text = split ('', $t);
+	my @text = split ('', $t);
 
 	for ($i=0; $i < 8; $i++) {
 		my @here = byte2bin($text[$i*2]);
@@ -39,7 +39,7 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	my $size = (stat($_[0]))[7]-44;
 	$m_size = (oct ('0b' . $m_size))*2 + 8;
 
-	return (0, 0, 0) if ($m_size > $size);
+#	return (0, 0, 0) if ($m_size > $size);
 
 	for ($i = 8; $i < 20; $i++) {
 		my @here = byte2bin($text[$i*2]);
@@ -118,7 +118,7 @@ sub readWav ($) {
 	for ($i = 0; $i < $size; $i+=8) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
-
+	
 	return substr($text, 6);
 }
 

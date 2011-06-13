@@ -40,6 +40,7 @@ elsif ($choice == 2) {
 	clear;
 	$time = time - $time;
 	print "There was:\n$text\n\nDone in $time seconds.\n";
+	$text = <>;
 }
 
 
@@ -48,5 +49,6 @@ elsif ($choice == 3) {
 	@text = isContainerWav ("out.wav");
 	clear;
 	$time = time - $time;
-	print "@text\n;"
+	print "@text\n";
+	$text = <>;
 }
