@@ -76,8 +76,6 @@ $Window->AddMDIClient(
 
 my $dialog = Win32::GUI::DialogBox->new(
 	-name		=> "passPrompt",
-	-dialogui	=> 1,
-	-resizable	=> 0,
 	-text		=> "Введите пароль",
 	-size		=> [205, 170],
 	-topmost	=> 1,
@@ -105,6 +103,7 @@ $dialog->AddButton(
 	-font	=> $font,
 	-onClick=> \&Pass,
 	-default=> 1,
+	-tabstop=> 1,
 );
 
 $dialog->AddLabel(
@@ -147,7 +146,7 @@ sub NewChild {
 		-text	=> 'Кнопкой "Прочитать из файла" можно извлечь Ваше сообщение:',
 		-pos	=> [10, 10],
 	);
-
+	
 	$Child->AddTextfield(
 		-name	=> "Steg",
 		-font	=> $font,
@@ -157,6 +156,12 @@ sub NewChild {
 		-height	=> 450,
 		-multiline => 1,
 		-vscroll => 1,
+	);
+	
+	$Child->AddProgressBar(
+		-name	=> "pb1",
+		-smooth => 1,
+		-size	=> [100, 20]
 	);
 
 	$Child->AddTimer("TextTimer".$ChildCount, 250);
@@ -177,7 +182,7 @@ sub NewChild {
 		-name	=> "txtPass",
 		-font	=> $font,
 		-password => 1,
-		-readonly => 1,
+		-disabled => 1,
 		-left	=> 10,
 		-width	=> 140,
 		-height	=> 23,
@@ -187,7 +192,7 @@ sub NewChild {
 		-name	=> "chkPass",
 		-text	=> "Зашифровать сообщение. Пароль:",
 		-left	=> 13,
-		-onClick=> sub {$Child->{txtPass}->SetReadOnly(($Child->{chkPass}->Checked() ^ 1)) },
+		-onClick=> sub {$Child->{txtPass}->Enable($Child->{chkPass}->Checked()) },
 	);
 
 	$Child->AddButton(
@@ -307,6 +312,7 @@ sub Steg ($) {
 	else { eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')"); }
 	
 	$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
+	$self->{unSteg}->Text('');
 	
 	return 0;
 }

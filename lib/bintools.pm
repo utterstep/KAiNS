@@ -3,12 +3,13 @@ sub dec2bin ($) {
 }
 
 sub str2bin ($) {
-	my $bin = '';
+	my $str = shift;
+	my @bin = ();
 	my @t = split('', shift);
-	for (my $i=0; $i <= $#t; $i++) {
-		$bin .= substr(dec2bin(ord($t[$i])), 24, 8);
+	for (my $i=0; $i < length($str); $i++) {
+		push @bin, split ('', sprintf "%08b", ord(substr($str, $i, 1)));
 	}
-	return split('', $bin);
+	return @bin;
 }
 
 sub byte2bin ($) { 
