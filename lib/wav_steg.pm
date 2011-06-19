@@ -30,6 +30,7 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	close READ;
 
 	my @text = split ('', $t);
+	undef $t;
 
 	for ($i=0; $i < 8; $i++) {
 		my @here = byte2bin($text[$i*2]);
@@ -38,14 +39,13 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 
 	my $size = (stat($_[0]))[7]-44;
 	$m_size = (oct ('0b' . $m_size))*2 + 8;
-
-#	return (0, 0, 0) if ($m_size > $size);
+	
+	return (0, 0, 0) if ($m_size > $size);
 
 	for ($i = 8; $i < 20; $i++) {
 		my @here = byte2bin($text[$i*2]);
 		$b_text .= join('', @here[4..7]);
 	}
-
 	for ($i = 0; $i < 48; $i+=8) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
@@ -63,18 +63,19 @@ sub write2Wav ($$) {
 
 	my $size = getFragSize($_[1]);
 	my @bin = str2bin($_[0]);
+	undef $_[0];
 	my @cod = split('', dec2bin(scalar(@bin)/8));
 
 	sysseek (OUT, 44, SEEK_SET);
 	for ($i=0; $i < 8; $i++) {
-		my $t = '';
+		my $t;
 		sysread (OUT, $t, 2);
 		my @now = byte2bin($t);
 		@now[4..7] = @cod[$i*4..$i*4+3];
 		$write .= chr (oct ('0b' . join('',@now))) . substr($t, 1, 1);
 	}
 	for ($i=0; $i<=$#bin; $i+=4) {
-		my $t = '';
+		my $t;
 		sysread (OUT, $t, 2);
 		my @now = byte2bin($t);
 		@now[4..7] = @bin[$i..$i+3];
@@ -83,6 +84,8 @@ sub write2Wav ($$) {
 	sysseek (OUT, 44, 0);
 	syswrite (OUT, $write);
 	close OUT;
+	undef @bin;
+	undef $write;
 
 	return 0;
 }
@@ -104,6 +107,7 @@ sub readWav ($) {
 	close READ;
 
 	@text = split ('', $t);
+	undef $t;
 
 	for ($i=0; $i < 8; $i++) {
 		my @here = byte2bin($text[$i*2]);
@@ -120,6 +124,9 @@ sub readWav ($) {
 	for ($i = 0; $i < $size; $i+=8) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
+	
+	undef @text;
+	undef $b_text;
 	
 	return substr($text, 6);
 }

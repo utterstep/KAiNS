@@ -130,7 +130,7 @@ sub NewChild {
 		-name			=> "Child".++$ChildCount,
 		-onActivate		=> sub { print "Activate\n"; },
 		-onDeactivate	=> sub { print "Deactivate\n"; },
-		-onTerminate	=> sub { print "Terminate\n";},
+		-onTerminate	=> sub { print "Terminate\n"; },
 		-width			=> 880,
 		-height			=> 600,
 	) or die "Child";
@@ -158,13 +158,7 @@ sub NewChild {
 		-vscroll => 1,
 	);
 	
-	$Child->AddProgressBar(
-		-name	=> "pb1",
-		-smooth => 1,
-		-size	=> [100, 20]
-	);
-
-	$Child->AddTimer("TextTimer".$ChildCount, 250);
+	# $Child->AddTimer("TextTimer".$ChildCount, 250);
 
 	$Child->AddTextfield(
 		-name	=> "unSteg",
@@ -310,6 +304,8 @@ sub Steg ($) {
 		else { 1; }
 	}
 	else { eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')"); }
+	
+	undef $text;
 	
 	$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
 	$self->{unSteg}->Text('');

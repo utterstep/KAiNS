@@ -34,6 +34,7 @@ sub isContainerBmp ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	close READ;
 
 	my @text = split ('', $t);
+	undef $t;
 
 	for ($i=0; $i < 16; $i++) {
 		my @here = byte2bin($text[$i]);
@@ -67,24 +68,29 @@ sub write2Bmp ($$) {
 	my $off = getOffsetBmp($_[1]);
 	sysseek (OUT, $off, 0);
 	my @bin = str2bin($_[0]);
+	undef $_[0];
 	my @cod = split('', dec2bin(scalar(@bin)/8));
+	
 	for ($i=0; $i < 16; $i++) {
-		my $t = '';
+		my $t;
 		sysread (OUT, $t, 1);
 		my @now = byte2bin($t);
 		@now[6..7] = @cod[$i*2..$i*2+1];
 		$write .= chr (oct ('0b' . join('',@now)));
 	}
 	for ($i=0; $i<=$#bin; $i+=2) {
-		my $t = '';
+		my $t;
 		sysread (OUT, $t, 1);
 		my @now = byte2bin($t);
 		@now[6..7] = @bin[$i..$i+1];
+		undef @bin[$i..$i+1];
 		$write .= chr (oct ('0b' . join('',@now)));
 	}
 	sysseek (OUT, $off, 0);
 	syswrite (OUT, $write);
 	close OUT;
+	undef $write;
+	undef @bin;
 	
 	return 0;
 }
@@ -106,6 +112,7 @@ sub readBmp ($) {
 	close READ;
 
 	@text = split ('', $t);
+	undef $t;
 
 	for ($i=0; $i < 16; $i++) {
 		my @here = byte2bin($text[$i]);
@@ -122,6 +129,9 @@ sub readBmp ($) {
 	for ($i = 0; $i < $size; $i+=8) {
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
+
+	undef @text;
+	undef $b_text;
 
 	return substr($text, 6);
 }
