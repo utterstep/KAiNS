@@ -4,7 +4,8 @@ use warnings;
 use strict;
 use Win32::GUI(), qw(	SB_THUMBTRACK SB_LINEDOWN SB_LINEUP
 						WS_CAPTION WS_SIZEBOX WS_CHILD
-						WS_CLIPCHILDREN WS_EX_CLIENTEDGE RGN_DIFF);
+						WS_CLIPCHILDREN WS_EX_CLIENTEDGE RGN_DIFF
+						WS_POPUP WS_THICKFRAME WS_EX_TOPMOST);
 use lib qw(./lib);
 use File::Copy;
 use locale;
@@ -18,6 +19,42 @@ require 'png_steg.pm';	#...and png steganography
 require 'crypt.pm';		#cryptography is also needed
 
 our $ver = '0.9.0';
+
+#try to load the splash bitmap from the exe that is running
+my $splashimage = new Win32::GUI::Bitmap('SPLASH');
+
+#get the dimensions of the bitmap
+my ($width,$height) = $splashimage->Info() if defined $splashimage;
+  
+#create the splash window
+my $splash     = new Win32::GUI::Window (
+   -name       => "Splash",
+   -text       => "Splash",
+   -height     => $height, 
+   -width      => $width,
+   -left       => 100, 
+   -top        => 100,
+   -addstyle   => WS_POPUP,
+   -popstyle   => WS_CAPTION | WS_THICKFRAME,
+   -addexstyle => WS_EX_TOPMOST
+);
+
+#create a label in which the bitmap will be placed
+my $bitmap    = $splash->AddLabel(
+    -name     => "Bitmap",
+    -left     => 0,
+    -top      => 0,
+    -width    => $width,
+    -height   => $height,
+    -bitmap   => $splashimage,
+);  
+
+#center the splash and show it
+$splash->Center();
+$splash->Show();
+#call do events - not Dialog - this will display the window and let us 
+#build the rest of the application.
+Win32::GUI::DoEvents(); 
 
 my $ChildCount = -1; #count of Child windows
 my ($Window, %file, %ext, %icon, $t, $asking, %pass, %file_tc); #some var's
@@ -118,9 +155,20 @@ $dialog->AddLabel(
 );
 
 $Window->Resize(900, 680);
+sleep(2) if defined $splashimage;
+
+# ... hide the splash and enter the Dialog phase
+$splash->Animate(
+	-show => 0,
+	-activate => 1,
+	-animation => 'blend',
+	-time => 800,
+);
+
 $Window->Show();
 Win32::GUI::Maximize($Window);
 NewChild();
+
 Win32::GUI::Dialog();
 
 ###sub to override default behaviour of "Close" button in password dialog
@@ -143,13 +191,13 @@ sub NewChild { #creating "child" window (GUI uses MDI window model)
 	###designing main window###
 	$Child->AddLabel(
 		-name	=> "lblSteg",
-		-text	=> "Введите текст для записи, или откройте текстовый файл\nзатем нажмите \"Записать в файл\":",
+		-text	=> "Введите текст для записи, или откройте текстовый файл\nзатем нажмите \"Записать в контейнер\":",
 		-pos	=> [10, 10],
 	);
 	
 	$Child->AddLabel(
 		-name	=> "lblUSteg",
-		-text	=> 'Кнопкой "Прочитать из файла" можно извлечь Ваше сообщение:',
+		-text	=> 'Кнопкой "Прочитать из контейнера" можно извлечь Ваше сообщение:',
 		-pos	=> [10, 10],
 	);
 	
@@ -272,7 +320,7 @@ sub getExtension ($) { #in: file name, out: file extension
 sub fileSelect ($) { #file select dialog and handlers
 	my $self = shift; #getting link on "Child"
 	my $temp = $file{$self}; #savin' old file
-	Win32::GUI::MessageBox($self, "Пожалуйста, выберите файл-контейнер:\nфайл, в который стеганограмма будет записана", "Выберите файл", 0x0000|0x0000); #let's say to user what do we want from him
+	Win32::GUI::MessageBox($self, "Пожалуйста, выберите файл-контейнер\n", "Выберите файл", 0x0000|0x0000); #let's say to user what do we want from him
 	$file{$self} = $self->GetOpenFileName( #system FileOpen dialog call
 		-filter =>\@filter,
 		-defaultfilter => ((scalar(@filter)/2)-1),
