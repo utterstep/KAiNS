@@ -1,3 +1,12 @@
+###############################################
+############     png_steg.pm      #############
+###############################################
+#main idea of this file is based on fact, that 
+#PNG format is using lossless compression, so a
+#ll we have to do, is to convert PNG to 24-bit 
+#BMP, work with it, and convert it back to PNG.
+#Voila! No magic, sigh....
+
 sub byteLimitPng ($) {
 	my $file = shift;
 	my $img = Imager->new(file => $file);
