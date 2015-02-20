@@ -25,14 +25,14 @@ my $splashimage = new Win32::GUI::Bitmap('SPLASH');
 
 #get the dimensions of the bitmap
 my ($width,$height) = $splashimage->Info() if defined $splashimage;
-  
+
 #create the splash window
 my $splash     = new Win32::GUI::Window (
    -name       => "Splash",
    -text       => "Splash",
-   -height     => $height, 
+   -height     => $height,
    -width      => $width,
-   -left       => 100, 
+   -left       => 100,
    -top        => 100,
    -addstyle   => WS_POPUP,
    -popstyle   => WS_CAPTION | WS_THICKFRAME,
@@ -47,45 +47,45 @@ my $bitmap    = $splash->AddLabel(
     -width    => $width,
     -height   => $height,
     -bitmap   => $splashimage,
-);  
+);
 
 #center the splash and show it
 $splash->Center();
 $splash->Show();
-#call do events - not Dialog - this will display the window and let us 
+#call do events - not Dialog - this will display the window and let us
 #build the rest of the application.
-Win32::GUI::DoEvents(); 
+Win32::GUI::DoEvents();
 
 my $ChildCount = -1; #count of Child windows
 my ($Window, %file, %ext, %icon, $t, $asking, %pass, %file_tc); #some var's
 my @filter=("Image files", "*.bmp;*.png", "WAV audio files", "*.wav"); #allowed file formats
 
 my %message = ( #file-info messages
-	"000" => "Этот файл не содержит стеганографических данных",
-	"100" => "Этот файл содержит текстовое сообщение",
-	"101" => "Этот файл содержит в себе другой файл",
-	"110" => "Этот файл содержит защищенное паролем текстовое сообщение",
-	"111" => "Этот файл содержит в себе зашифрованный файл",
+	"000" => "Р­С‚РѕС‚ С„Р°Р№Р» РЅРµ СЃРѕРґРµСЂР¶РёС‚ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєРёС… РґР°РЅРЅС‹С…",
+	"100" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ С‚РµРєСЃС‚РѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ",
+	"101" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РІ СЃРµР±Рµ РґСЂСѓРіРѕР№ С„Р°Р№Р»",
+	"110" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ Р·Р°С‰РёС‰РµРЅРЅРѕРµ РїР°СЂРѕР»РµРј С‚РµРєСЃС‚РѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ",
+	"111" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РІ СЃРµР±Рµ Р·Р°С€РёС„СЂРѕРІР°РЅРЅС‹Р№ С„Р°Р№Р»",
 );
 
 for (my $i = 0; $i < scalar(@filter)/2; $i++) { #creating All supported types choice
 	$t .= "$filter[($i*2+1)];";
 }
 
-push (@filter, ("Все поддреживаемые типы", $t));
+push (@filter, ("Р’СЃРµ РїРѕРґРґСЂРµР¶РёРІР°РµРјС‹Рµ С‚РёРїС‹", $t));
 
 my $Menu = Win32::GUI::MakeMenu( #creating menu
-	"&Файл"		=> "File",
-	"   > &Новый"			=> { -name => "File_New",  -onClick => \&NewChild },
+	"&Р¤Р°Р№Р»"		=> "File",
+	"   > &РќРѕРІС‹Р№"			=> { -name => "File_New",  -onClick => \&NewChild },
 	"   > -"			=> 0,
-	"   > Вы&ход"		=> { -name => "File_Exit", -onClick => sub { -1; } },
-	"&Окно"	=> "Window",
-	"   > К &следующему"		=> { -name => "Next",	-onClick => sub { $Window->{Client}->Next;	 } },
-	"   > К &предыдущему"	=> { -name => "Prev",	-onClick => sub { $Window->{Client}->Previous; } },
+	"   > Р’С‹&С…РѕРґ"		=> { -name => "File_Exit", -onClick => sub { -1; } },
+	"&РћРєРЅРѕ"	=> "Window",
+	"   > Рљ &СЃР»РµРґСѓСЋС‰РµРјСѓ"		=> { -name => "Next",	-onClick => sub { $Window->{Client}->Next;	 } },
+	"   > Рљ &РїСЂРµРґС‹РґСѓС‰РµРјСѓ"	=> { -name => "Prev",	-onClick => sub { $Window->{Client}->Previous; } },
 	"   > -"			=> 0,
-	"   > Расположить &горизонтально"	=> { -name => "TileH",   -onClick => sub { $Window->{Client}->Tile(1);  } },
-	"&Помощь"		=> "Help",
-	"   > О програ&мме"		=> { -name => "About", -onClick => sub { 1; } },
+	"   > Р Р°СЃРїРѕР»РѕР¶РёС‚СЊ &РіРѕСЂРёР·РѕРЅС‚Р°Р»СЊРЅРѕ"	=> { -name => "TileH",   -onClick => sub { $Window->{Client}->Tile(1);  } },
+	"&РџРѕРјРѕС‰СЊ"		=> "Help",
+	"   > Рћ РїСЂРѕРіСЂР°&РјРјРµ"		=> { -name => "About", -onClick => sub { 1; } },
 );
 ##fonts defining
 my $font = Win32::GUI::Font->new(
@@ -94,7 +94,7 @@ my $font = Win32::GUI::Font->new(
 
 my $font9 = Win32::GUI::Font->new(
 	-size => 9,
-); 
+);
 #creating main window
 $Window = new Win32::GUI::MDIFrame (
 	-title  => "KainS, ver $ver",
@@ -103,7 +103,7 @@ $Window = new Win32::GUI::MDIFrame (
 	-name   => "Main",
 	-menu   => $Menu,
 	-pos	=> [200, 200]
-) or die "Window"; 
+) or die "Window";
 
 $Window->AddMDIClient(
 	-name	   => "Client",
@@ -115,7 +115,7 @@ $Window->AddMDIClient(
 
 my $dialog = Win32::GUI::DialogBox->new(
 	-name		=> "passPrompt",
-	-text		=> "Введите пароль",
+	-text		=> "Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ",
 	-size		=> [205, 170],
 	-topmost	=> 1,
 	-hashelp	=> 0,
@@ -130,12 +130,12 @@ $dialog->AddTextfield(
 	-top	=> 10,
 	-width	=> 145,
 	-height	=> 23,
-	-prompt	=> ["Пароль:", -45],
+	-prompt	=> ["РџР°СЂРѕР»СЊ:", -45],
 );
 
 $dialog->AddButton(
 	-name	=> "btnPass",
-	-text	=> "Расшифровать сообщение",
+	-text	=> "Р Р°СЃС€РёС„СЂРѕРІР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ",
 	-width	=> 200,
 	-height	=> 30,
 	-top	=> 50,
@@ -147,7 +147,7 @@ $dialog->AddButton(
 
 $dialog->AddLabel(
 	-name	=> 'lblPassNote',
-	-text	=> 'Примечание: при вводе неверного пароля вы получите неверное сообщение. Ваш К.О.',
+	-text	=> 'РџСЂРёРјРµС‡Р°РЅРёРµ: РїСЂРё РІРІРѕРґРµ РЅРµРІРµСЂРЅРѕРіРѕ РїР°СЂРѕР»СЏ РІС‹ РїРѕР»СѓС‡РёС‚Рµ РЅРµРІРµСЂРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ. Р’Р°С€ Рљ.Рћ.',
 	-sunken => 1,
 	-pos	=> [1, 83],
 	-size	=> [195, 70],
@@ -187,20 +187,20 @@ sub NewChild { #creating "child" window (GUI uses MDI window model)
 		-width			=> 880,
 		-height			=> 600,
 	) or die "Child";
-	
+
 	###designing main window###
 	$Child->AddLabel(
 		-name	=> "lblSteg",
-		-text	=> "Введите текст для записи, или откройте текстовый файл\nзатем нажмите \"Записать в контейнер\":",
+		-text	=> "Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚ РґР»СЏ Р·Р°РїРёСЃРё, РёР»Рё РѕС‚РєСЂРѕР№С‚Рµ С‚РµРєСЃС‚РѕРІС‹Р№ С„Р°Р№Р»\nР·Р°С‚РµРј РЅР°Р¶РјРёС‚Рµ \"Р—Р°РїРёСЃР°С‚СЊ РІ РєРѕРЅС‚РµР№РЅРµСЂ\":",
 		-pos	=> [10, 10],
 	);
-	
+
 	$Child->AddLabel(
 		-name	=> "lblUSteg",
-		-text	=> 'Кнопкой "Прочитать из контейнера" можно извлечь Ваше сообщение:',
+		-text	=> 'РљРЅРѕРїРєРѕР№ "РџСЂРѕС‡РёС‚Р°С‚СЊ РёР· РєРѕРЅС‚РµР№РЅРµСЂР°" РјРѕР¶РЅРѕ РёР·РІР»РµС‡СЊ Р’Р°С€Рµ СЃРѕРѕР±С‰РµРЅРёРµ:',
 		-pos	=> [10, 10],
 	);
-	
+
 	$Child->AddTextfield(
 		-name	=> "Steg",
 		-font	=> $font,
@@ -211,7 +211,7 @@ sub NewChild { #creating "child" window (GUI uses MDI window model)
 		-multiline => 1,
 		-vscroll => 1,
 	);
-	
+
 	# $Child->AddTimer("TextTimer".$ChildCount, 250);
 
 	$Child->AddTextfield(
@@ -238,14 +238,14 @@ sub NewChild { #creating "child" window (GUI uses MDI window model)
 
 	$Child->AddCheckbox(
 		-name	=> "chkPass",
-		-text	=> "Зашифровать сообщение. Пароль:",
+		-text	=> "Р—Р°С€РёС„СЂРѕРІР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ. РџР°СЂРѕР»СЊ:",
 		-left	=> 13,
 		-onClick=> sub {$Child->{txtPass}->Enable($Child->{chkPass}->Checked()) },
 	);
 
 	$Child->AddButton(
 		-name	=> "btnSteg",
-		-text	=> "Записать в контейнер",
+		-text	=> "Р—Р°РїРёСЃР°С‚СЊ РІ РєРѕРЅС‚РµР№РЅРµСЂ",
 		-width	=> 135,
 		-height	=> 30,
 		-font	=> $font9,
@@ -254,17 +254,17 @@ sub NewChild { #creating "child" window (GUI uses MDI window model)
 
 	$Child->AddButton(
 		-name	=> "btnFileSteg",
-		-text	=> "Выбрать файл с текстом",
+		-text	=> "Р’С‹Р±СЂР°С‚СЊ С„Р°Р№Р» СЃ С‚РµРєСЃС‚РѕРј",
 		-width	=> 180,
 		-height	=> 30,
 		-left	=> 10,
 		-font	=> $font,
 		-onClick=> sub { File($Child) },
 	);
-	
+
 	$Child->AddButton(
 		-name	=> "btnUSteg",
-		-text	=> "Прочитать из контейнера",
+		-text	=> "РџСЂРѕС‡РёС‚Р°С‚СЊ РёР· РєРѕРЅС‚РµР№РЅРµСЂР°",
 		-width	=> 155,
 		-height	=> 30,
 		-font	=> $font9,
@@ -273,38 +273,38 @@ sub NewChild { #creating "child" window (GUI uses MDI window model)
 
 	$Child->AddButton(
 		-name	=> "btnChangeFile",
-		-text	=> "Выбрать другой файл",
+		-text	=> "Р’С‹Р±СЂР°С‚СЊ РґСЂСѓРіРѕР№ С„Р°Р№Р»",
 		-width	=> 140,
 		-height	=> 30,
 		-font	=> $font,
 		-onClick=> sub { fileSelect($Child) },
 	);
-	
+
 	$Child->AddLabel(
 		-name	=> "lblMaxSize",
 		-top	=> 100,
-		-size	=> [150, 60]		
+		-size	=> [150, 60]
 	);
-	
+
 	$Child->AddLabel(
 		-name	=> "lblFileInfo",
-		-text	=> "Для начала работы выберите файл-контейнер",
+		-text	=> "Р”Р»СЏ РЅР°С‡Р°Р»Р° СЂР°Р±РѕС‚С‹ РІС‹Р±РµСЂРёС‚Рµ С„Р°Р№Р»-РєРѕРЅС‚РµР№РЅРµСЂ",
 		-top	=> 30,
 		-size	=> [150, 90],
 	);
 
 	###for heavens sake that's all design...###
-	
+
 	$Child->Change( #setting resize handler
 		-onResize => \&ChildSize,
 	);
 	ChildSize($Child); #forcing resize to set all elements on their places
-	
+
 	$Child->{btnSteg}->Enable(0); #disabling...
 	$Child->{btnFileSteg}->Enable(0); #...all...
 	$Child->{btnUSteg}->Enable(0); #...controls...
-	$Child->{Steg}->Enable(0); #...before any file being chosen 
-	
+	$Child->{Steg}->Enable(0); #...before any file being chosen
+
 	Win32::GUI::Maximize($Child); #maximizing "child" window to use all space in "parent"
 	fileSelect($Child); #asking for the file
 
@@ -320,7 +320,7 @@ sub getExtension ($) { #in: file name, out: file extension
 sub fileSelect ($) { #file select dialog and handlers
 	my $self = shift; #getting link on "Child"
 	my $temp = $file{$self}; #savin' old file
-	Win32::GUI::MessageBox($self, "Пожалуйста, выберите файл-контейнер\n", "Выберите файл", 0x0000|0x0000); #let's say to user what do we want from him
+	Win32::GUI::MessageBox($self, "РџРѕР¶Р°Р»СѓР№СЃС‚Р°, РІС‹Р±РµСЂРёС‚Рµ С„Р°Р№Р»-РєРѕРЅС‚РµР№РЅРµСЂ\n", "Р’С‹Р±РµСЂРёС‚Рµ С„Р°Р№Р»", 0x0000|0x0000); #let's say to user what do we want from him
 	$file{$self} = $self->GetOpenFileName( #system FileOpen dialog call
 		-filter =>\@filter,
 		-defaultfilter => ((scalar(@filter)/2)-1),
@@ -328,16 +328,16 @@ sub fileSelect ($) { #file select dialog and handlers
 		-pathmustexist => 1,
 	);
 	if (!defined($file{$self})) { $file{$self} = $temp } #if nothing was selected - getting back to the old file
-	
-	else { 
+
+	else {
 		$file{$self} =~ s|\\|/|g;
 		$ext{$self} = ucfirst(lc(getExtension($file{$self}))); #setting "proper" extesion
 		$self->Change(-text => $file{$self},); #let's say in name what file we're workin' on
 		my $max_l = eval("byteLimit$ext{$self}('$file{$self}')"); #size limit
 		my @probe = eval("isContainer$ext{$self}('$file{$self}')"); #getting info about file
 		$self->{Steg}->SetLimitText($max_l); #setting limit if textfield
-		$self->{lblMaxSize}->Change( -text	=> "В этот файл можно записать информацию, объем которой не превышает: $max_l символов, или ". (int (($max_l-256)/1024)) . " Kb"); #setup of...
-		$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #...info labels
+		$self->{lblMaxSize}->Change( -text	=> "Р’ СЌС‚РѕС‚ С„Р°Р№Р» РјРѕР¶РЅРѕ Р·Р°РїРёСЃР°С‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ, РѕР±СЉРµРј РєРѕС‚РѕСЂРѕР№ РЅРµ РїСЂРµРІС‹С€Р°РµС‚: $max_l СЃРёРјРІРѕР»РѕРІ, РёР»Рё ". (int (($max_l-256)/1024)) . " Kb"); #setup of...
+		$self->{lblFileInfo}->Change( -text	=> "Р’С‹ РІС‹Р±СЂР°Р»Рё С„Р°Р№Р» ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #...info labels
 		$self->{btnSteg}->Enable(1); #let's...
 		$self->{btnFileSteg}->Enable(1); #...turn...
 		$self->{btnUSteg}->Enable(1); #...it all...
@@ -345,7 +345,7 @@ sub fileSelect ($) { #file select dialog and handlers
 		$self->{Steg}->Text(''); #removing...
 		$self->{unSteg}->Text(''); #...old data
 	}
-	
+
 	return 0;
 }
 
@@ -358,9 +358,9 @@ sub Steg ($$$) {
 		$t = xcrypt($self->{txtPass}->Text(), $t);
 	}
 	$text .= $t; #setting the whole message (signature + text)
-	
+
 	$text =~ s|'|\\'|g; #screening quotes
-	
+
 	my @probe = eval("isContainer$ext{$self}('$file{$self}')"); #getting info about file
 
 	if ($probe[0]) { #if file is already a container
@@ -368,33 +368,33 @@ sub Steg ($$$) {
 		substr ($copy, rindex ($copy, '.')) = '-copy'; #...name...
 		$copy .= lc(".$ext{$self}"); #...for the copy
 		#asking user's descision
-		my $act = Win32::GUI::MessageBox($self, "Файл содержит стеганографическую информацию.\nЗаписать новое сообщение в файл $copy?\n\nПри записи в исходный файл данные, находящиеся в нем сейчас, будут утеряны.", "Файл содержит данные", 0x0003|0x0030);
+		my $act = Win32::GUI::MessageBox($self, "Р¤Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ.\nР—Р°РїРёСЃР°С‚СЊ РЅРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РІ С„Р°Р№Р» $copy?\n\nРџСЂРё Р·Р°РїРёСЃРё РІ РёСЃС…РѕРґРЅС‹Р№ С„Р°Р№Р» РґР°РЅРЅС‹Рµ, РЅР°С…РѕРґСЏС‰РёРµСЃСЏ РІ РЅРµРј СЃРµР№С‡Р°СЃ, Р±СѓРґСѓС‚ СѓС‚РµСЂСЏРЅС‹.", "Р¤Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РґР°РЅРЅС‹Рµ", 0x0003|0x0030);
 		if ($act == 6) { #if he decided to ensure existance of old data:
 			copy($file{$self},$copy) or die "Copy failed: $!"; #create cope of old file
 			eval('write2'.$ext{$self}."('".$text."','".$copy."')"); #write data to the copy
 			$file{$self} = $copy; #change file with which we're workin' to new
 			$self->Change( -text => $file{$self} ); #renaming our "Child"
 			$self->{unSteg}->Text(''); #deleting obsolete UI data
-			$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #change label
-			Win32::GUI::MessageBox($self, "Ваше сообщение записанно в файл\n$copy", "Данные записаны", 0x0000|0x0000); #signal that everything's OK
+			$self->{lblFileInfo}->Change( -text	=> "Р’С‹ РІС‹Р±СЂР°Р»Рё С„Р°Р№Р» ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #change label
+			Win32::GUI::MessageBox($self, "Р’Р°С€Рµ СЃРѕРѕР±С‰РµРЅРёРµ Р·Р°РїРёСЃР°РЅРЅРѕ РІ С„Р°Р№Р»\n$copy", "Р”Р°РЅРЅС‹Рµ Р·Р°РїРёСЃР°РЅС‹", 0x0000|0x0000); #signal that everything's OK
 		}
 		elsif ($act == 7) { #if user doesn't want old data:
 			eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')"); #OK, we'll delete it, no problem
 			$self->{unSteg}->Text(''); #deleting obsolete UI data
-			$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #change label
-			Win32::GUI::MessageBox($self, "Ваше сообщение записанно в файл\n$file{$self}", "Данные записаны", 0x0000|0x0000); #signal that everything's OK
+			$self->{lblFileInfo}->Change( -text	=> "Р’С‹ РІС‹Р±СЂР°Р»Рё С„Р°Р№Р» ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #change label
+			Win32::GUI::MessageBox($self, "Р’Р°С€Рµ СЃРѕРѕР±С‰РµРЅРёРµ Р·Р°РїРёСЃР°РЅРЅРѕ РІ С„Р°Р№Р»\n$file{$self}", "Р”Р°РЅРЅС‹Рµ Р·Р°РїРёСЃР°РЅС‹", 0x0000|0x0000); #signal that everything's OK
 		}
 		else { 1; } #if cancell - GTFO of here!
 	}
 	else { #if file is clear - just write everything
-		eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')"); 
+		eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')");
 		$self->{unSteg}->Text(''); #deleting obsolete UI data
-		$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #change label
-		Win32::GUI::MessageBox($self, "Ваше сообщение записанно в файл\n$file{$self}", "Данные записаны", 0x0000|0x0000); #signal that everything's OK
-	} 
-	
+		$self->{lblFileInfo}->Change( -text	=> "Р’С‹ РІС‹Р±СЂР°Р»Рё С„Р°Р№Р» ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", ); #change label
+		Win32::GUI::MessageBox($self, "Р’Р°С€Рµ СЃРѕРѕР±С‰РµРЅРёРµ Р·Р°РїРёСЃР°РЅРЅРѕ РІ С„Р°Р№Р»\n$file{$self}", "Р”Р°РЅРЅС‹Рµ Р·Р°РїРёСЃР°РЅС‹", 0x0000|0x0000); #signal that everything's OK
+	}
+
 	undef $text; #delete unnecsessary data
-	
+
 	return 0;
 }
 
@@ -411,25 +411,25 @@ sub UnSteg ($) {
 		}
 	}
 	else { #if file is clear - we'll say it
-		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000|0x0040)
+		Win32::GUI::MessageBox($self, "Р”Р°РЅРЅС‹Р№ С„Р°Р№Р» РЅРµ СЃРѕРґРµСЂР¶РёС‚ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєРѕР№ РёРЅС„РѕСЂРјР°С†РёРё.\nР’С‹ РјРѕР¶РµС‚Рµ Р·Р°РїРёСЃР°С‚СЊ СЃРІРѕСЋ РёРЅС„РѕСЂРјР°С†РёСЋ РІ СЌС‚РѕС‚ С„Р°Р№Р» РёР»Рё РІС‹Р±СЂР°С‚СЊ РґСЂСѓРіРѕР№", "Р¤Р°Р№Р» РЅРµ СЏРІР»СЏРµС‚СЃСЏ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєРёРј РєРѕРЅС‚РµР№РЅРµСЂРѕРј", 0x0000|0x0040)
 	}
-	
+
 	return 0;
 }
 
 sub Pass { #pass "applying" sub
-	$pass{$asking} = $dialog->{txtPassAsk}->Text(); #get the pass 
+	$pass{$asking} = $dialog->{txtPassAsk}->Text(); #get the pass
 	$dialog->{txtPassAsk}->Text(''); #clear pass prompt field
 	my $text = xcrypt($pass{$asking}, eval("read$ext{$asking}('$file{$asking}')")); #unsteg and uncrypt
 	$asking->{unSteg}->Text($text); #pushing text in "Child" which's asked for it
 	$dialog->Hide(); #go away fugu-fish!
-	
+
 	return 0;
 }
 
 sub File { #castrated  "File-steg". Don't want to talk about it.
-	my $self = shift; 
-	my @filt = ("Текстовый файл", "*.txt");
+	my $self = shift;
+	my @filt = ("РўРµРєСЃС‚РѕРІС‹Р№ С„Р°Р№Р»", "*.txt");
 	$file_tc{$self} = $self->GetOpenFileName(
 		-filter => \@filt,
 		-filemustexist => 1,
@@ -450,7 +450,7 @@ sub File { #castrated  "File-steg". Don't want to talk about it.
 			undef $text;
 		}
 		else {
-			Win32::GUI::MessageBox($self, "Файл превышает максимально допустимый размер для данного контейнера\nВы можете записать файл, размером не больше чем ".int(($max_l-256)/1024)."kb.", "Файл слишком большой", 0x0000|0x0030)
+			Win32::GUI::MessageBox($self, "Р¤Р°Р№Р» РїСЂРµРІС‹С€Р°РµС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕ РґРѕРїСѓСЃС‚РёРјС‹Р№ СЂР°Р·РјРµСЂ РґР»СЏ РґР°РЅРЅРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР°\nР’С‹ РјРѕР¶РµС‚Рµ Р·Р°РїРёСЃР°С‚СЊ С„Р°Р№Р», СЂР°Р·РјРµСЂРѕРј РЅРµ Р±РѕР»СЊС€Рµ С‡РµРј ".int(($max_l-256)/1024)."kb.", "Р¤Р°Р№Р» СЃР»РёС€РєРѕРј Р±РѕР»СЊС€РѕР№", 0x0000|0x0030)
 		}
 	}
 }

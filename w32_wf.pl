@@ -24,11 +24,11 @@ my ($Window, %file, %ext, %icon, $t, $asking, %pass, %file_tc);
 my @filter=("Image files", "*.bmp;*.png", "WAV audio files", "*.wav");
 
 my %message = (
-	"000" => "Этот файл не содержит стеганографических данных",
-	"100" => "Этот файл содержит текстовое сообщение",
-	"101" => "Этот файл содержит в себе другой файл",
-	"110" => "Этот файл содержит защищенное паролем текстовое сообщение",
-	"111" => "Этот файл содержит в себе зашифрованный файл",
+	"000" => "Р­С‚РѕС‚ С„Р°Р№Р» РЅРµ СЃРѕРґРµСЂР¶РёС‚ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєРёС… РґР°РЅРЅС‹С…",
+	"100" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ С‚РµРєСЃС‚РѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ",
+	"101" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РІ СЃРµР±Рµ РґСЂСѓРіРѕР№ С„Р°Р№Р»",
+	"110" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ Р·Р°С‰РёС‰РµРЅРЅРѕРµ РїР°СЂРѕР»РµРј С‚РµРєСЃС‚РѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ",
+	"111" => "Р­С‚РѕС‚ С„Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РІ СЃРµР±Рµ Р·Р°С€РёС„СЂРѕРІР°РЅРЅС‹Р№ С„Р°Р№Р»",
 );
 
 for (my $i = 0; $i < scalar(@filter)/2; $i++) {
@@ -59,7 +59,7 @@ my $font = Win32::GUI::Font->new(
 
 my $font9 = Win32::GUI::Font->new(
 	-size => 9,
-); 
+);
 
 $Window = new Win32::GUI::MDIFrame (
 	-title  => "KAinS by Utter, ver $ver",
@@ -68,7 +68,7 @@ $Window = new Win32::GUI::MDIFrame (
 	-name   => "Main",
 	-menu   => $Menu,
 	-pos	=> [200, 200]
-) or die "Window"; 
+) or die "Window";
 
 $Window->AddMDIClient(
 	-name	   => "Client",
@@ -80,7 +80,7 @@ $Window->AddMDIClient(
 
 my $dialog = Win32::GUI::DialogBox->new(
 	-name		=> "passPrompt",
-	-text		=> "Введите пароль",
+	-text		=> "Р’РІРµРґРёС‚Рµ РїР°СЂРѕР»СЊ",
 	-size		=> [205, 170],
 	-topmost	=> 1,
 	-hashelp	=> 0,
@@ -95,12 +95,12 @@ $dialog->AddTextfield(
 	-top	=> 10,
 	-width	=> 145,
 	-height	=> 23,
-	-prompt	=> ["Пароль:", -45],
+	-prompt	=> ["РџР°СЂРѕР»СЊ:", -45],
 );
 
 $dialog->AddButton(
 	-name	=> "btnPass",
-	-text	=> "Расшифровать сообщение",
+	-text	=> "Р Р°СЃС€РёС„СЂРѕРІР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ",
 	-width	=> 200,
 	-height	=> 30,
 	-top	=> 50,
@@ -112,7 +112,7 @@ $dialog->AddButton(
 
 $dialog->AddLabel(
 	-name	=> 'lblPassNote',
-	-text	=> 'Примечание: при вводе неверного пароля вы получите неверное сообщение. Ваш К.О.',
+	-text	=> 'РџСЂРёРјРµС‡Р°РЅРёРµ: РїСЂРё РІРІРѕРґРµ РЅРµРІРµСЂРЅРѕРіРѕ РїР°СЂРѕР»СЏ РІС‹ РїРѕР»СѓС‡РёС‚Рµ РЅРµРІРµСЂРЅРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ. Р’Р°С€ Рљ.Рћ.',
 	-sunken => 1,
 	-pos	=> [1, 83],
 	-size	=> [195, 70],
@@ -138,19 +138,19 @@ sub NewChild {
 		-width			=> 880,
 		-height			=> 600,
 	) or die "Child";
-	
+
 	$Child->AddLabel(
 		-name	=> "lblSteg",
-		-text	=> 'Введите текст для записи, затем нажмите "Записать в файл":',
+		-text	=> 'Р’РІРµРґРёС‚Рµ С‚РµРєСЃС‚ РґР»СЏ Р·Р°РїРёСЃРё, Р·Р°С‚РµРј РЅР°Р¶РјРёС‚Рµ "Р—Р°РїРёСЃР°С‚СЊ РІ С„Р°Р№Р»":',
 		-pos	=> [10, 10],
 	);
-	
+
 	$Child->AddLabel(
 		-name	=> "lblUSteg",
-		-text	=> 'Кнопкой "Прочитать из файла" можно извлечь Ваше сообщение:',
+		-text	=> 'РљРЅРѕРїРєРѕР№ "РџСЂРѕС‡РёС‚Р°С‚СЊ РёР· С„Р°Р№Р»Р°" РјРѕР¶РЅРѕ РёР·РІР»РµС‡СЊ Р’Р°С€Рµ СЃРѕРѕР±С‰РµРЅРёРµ:',
 		-pos	=> [10, 10],
 	);
-	
+
 	$Child->AddTextfield(
 		-name	=> "Steg",
 		-font	=> $font,
@@ -161,7 +161,7 @@ sub NewChild {
 		-multiline => 1,
 		-vscroll => 1,
 	);
-	
+
 	# $Child->AddTimer("TextTimer".$ChildCount, 250);
 
 	$Child->AddTextfield(
@@ -188,14 +188,14 @@ sub NewChild {
 
 	$Child->AddCheckbox(
 		-name	=> "chkPass",
-		-text	=> "Зашифровать сообщение. Пароль:",
+		-text	=> "Р—Р°С€РёС„СЂРѕРІР°С‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ. РџР°СЂРѕР»СЊ:",
 		-left	=> 13,
 		-onClick=> sub {$Child->{txtPass}->Enable($Child->{chkPass}->Checked()) },
 	);
 
 	$Child->AddButton(
 		-name	=> "btnSteg",
-		-text	=> "Записать в контейнер",
+		-text	=> "Р—Р°РїРёСЃР°С‚СЊ РІ РєРѕРЅС‚РµР№РЅРµСЂ",
 		-width	=> 125,
 		-height	=> 30,
 		-font	=> $font9,
@@ -204,16 +204,16 @@ sub NewChild {
 
 	$Child->AddButton(
 		-name	=> "btnFileSteg",
-		-text	=> "Записать файл в контейнер",
+		-text	=> "Р—Р°РїРёСЃР°С‚СЊ С„Р°Р№Р» РІ РєРѕРЅС‚РµР№РЅРµСЂ",
 		-width	=> 110,
 		-height	=> 30,
 		-font	=> $font,
 		-onClick=> sub { File($Child) },
 	);
-	
+
 	$Child->AddButton(
 		-name	=> "btnUSteg",
-		-text	=> "Прочитать из контейнера",
+		-text	=> "РџСЂРѕС‡РёС‚Р°С‚СЊ РёР· РєРѕРЅС‚РµР№РЅРµСЂР°",
 		-width	=> 145,
 		-height	=> 30,
 		-font	=> $font9,
@@ -222,19 +222,19 @@ sub NewChild {
 
 	$Child->AddButton(
 		-name	=> "btnChangeFile",
-		-text	=> "Выбрать другой файл",
+		-text	=> "Р’С‹Р±СЂР°С‚СЊ РґСЂСѓРіРѕР№ С„Р°Р№Р»",
 		-width	=> 140,
 		-height	=> 30,
 		-font	=> $font,
 		-onClick=> sub { fileSelect($Child) },
 	);
-	
+
 	$Child->AddLabel(
 		-name	=> "lblMaxSize",
 		-top	=> 100,
-		-size	=> [150, 60]		
+		-size	=> [150, 60]
 	);
-	
+
 	$Child->AddLabel(
 		-name	=> "lblFileInfo",
 		-top	=> 30,
@@ -268,21 +268,21 @@ sub fileSelect ($) {
 		-filemustexist => 1,
 		-pathmustexist => 1,
 	);
-	if ($file{$self} !~ '.') { $file{$self} = $temp } 
+	if ($file{$self} !~ '.') { $file{$self} = $temp }
 	$file{$self} =~ s|\\|/|g;
 	$ext{$self} = ucfirst(lc(getExtension($file{$self})));
 
 	$self->Change(-text => $file{$self},);
 	my $max_l = eval("byteLimit$ext{$self}('$file{$self}')");
 	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
-	if ($file{$self} =~ '.') { 
+	if ($file{$self} =~ '.') {
 		$self->{Steg}->SetLimitText($max_l);
-		$self->{lblMaxSize}->Change( -text	=> "В этот файл можно записать информацию, объем которой не превышает: $max_l символов, или ". (int (($max_l-256)/1024)) . " Kb");
-		$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
+		$self->{lblMaxSize}->Change( -text	=> "Р’ СЌС‚РѕС‚ С„Р°Р№Р» РјРѕР¶РЅРѕ Р·Р°РїРёСЃР°С‚СЊ РёРЅС„РѕСЂРјР°С†РёСЋ, РѕР±СЉРµРј РєРѕС‚РѕСЂРѕР№ РЅРµ РїСЂРµРІС‹С€Р°РµС‚: $max_l СЃРёРјРІРѕР»РѕРІ, РёР»Рё ". (int (($max_l-256)/1024)) . " Kb");
+		$self->{lblFileInfo}->Change( -text	=> "Р’С‹ РІС‹Р±СЂР°Р»Рё С„Р°Р№Р» ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
 	}
 	$self->{Steg}->Text('');
 	$self->{unSteg}->Text('');
-	
+
 	return 0;
 }
 
@@ -295,17 +295,17 @@ sub Steg ($$$) {
 		$t = xcrypt($self->{txtPass}->Text(), $t);
 	}
 	$text .= $t;
-	
+
 	$text =~ s|'|\\'|g;
-	
+
 	my @probe = eval("isContainer$ext{$self}('$file{$self}')");
 
 	if ($probe[0]) {
 		my $copy = $file{$self};
 		substr ($copy, rindex ($copy, '.')) = '-copy';
 		$copy .= lc(".$ext{$self}");
-		my $act = Win32::GUI::MessageBox($self, "Файл содержит стеганографическую информацию.\nЗаписать новое сообщение в файл $copy?\n\nПри записи в исходный файл данные, находящиеся в нем сейчас, будут утеряны.", "Файл содержит данные", 0x0003|0x0030);
-		if ($act == 6) { 
+		my $act = Win32::GUI::MessageBox($self, "Р¤Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєСѓСЋ РёРЅС„РѕСЂРјР°С†РёСЋ.\nР—Р°РїРёСЃР°С‚СЊ РЅРѕРІРѕРµ СЃРѕРѕР±С‰РµРЅРёРµ РІ С„Р°Р№Р» $copy?\n\nРџСЂРё Р·Р°РїРёСЃРё РІ РёСЃС…РѕРґРЅС‹Р№ С„Р°Р№Р» РґР°РЅРЅС‹Рµ, РЅР°С…РѕРґСЏС‰РёРµСЃСЏ РІ РЅРµРј СЃРµР№С‡Р°СЃ, Р±СѓРґСѓС‚ СѓС‚РµСЂСЏРЅС‹.", "Р¤Р°Р№Р» СЃРѕРґРµСЂР¶РёС‚ РґР°РЅРЅС‹Рµ", 0x0003|0x0030);
+		if ($act == 6) {
 			copy($file{$self},$copy) or die "Copy failed: $!";
 			eval('write2'.$ext{$self}."('".$text."','".$copy."')");
 			$file{$self} = $copy;
@@ -317,12 +317,12 @@ sub Steg ($$$) {
 		else { 1; }
 	}
 	else { eval('write2'.$ext{$self}."('".$text."','".$file{$self}."')"); }
-	
+
 	undef $text;
-	
-	$self->{lblFileInfo}->Change( -text	=> "Вы выбрали файл ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
+
+	$self->{lblFileInfo}->Change( -text	=> "Р’С‹ РІС‹Р±СЂР°Р»Рё С„Р°Р№Р» ".substr($file{$self}, rindex($file{$self}, '/')+1)."\n$message{$probe[0].$probe[1].$probe[2]}", );
 	$self->{unSteg}->Text('');
-	
+
 	return 0;
 }
 
@@ -340,12 +340,12 @@ sub UnSteg ($) {
 				my $i = index($temp, "\n");
 				my $name = substr ($temp, 0, $i);
 				my $file = substr ($temp, $i);
-				my $act = Win32::GUI::MessageBox($self, "В данном контейнере содержится файл $name.\nРаспаковать его в рабочую папку данной программы?", "Контейнер содержит файл", 0x0004|0x0020);
+				my $act = Win32::GUI::MessageBox($self, "Р’ РґР°РЅРЅРѕРј РєРѕРЅС‚РµР№РЅРµСЂРµ СЃРѕРґРµСЂР¶РёС‚СЃСЏ С„Р°Р№Р» $name.\nР Р°СЃРїР°РєРѕРІР°С‚СЊ РµРіРѕ РІ СЂР°Р±РѕС‡СѓСЋ РїР°РїРєСѓ РґР°РЅРЅРѕР№ РїСЂРѕРіСЂР°РјРјС‹?", "РљРѕРЅС‚РµР№РЅРµСЂ СЃРѕРґРµСЂР¶РёС‚ С„Р°Р№Р»", 0x0004|0x0020);
 				if ($act == 6) {
 					open (OUT, '>:raw', $name);
 					syswrite (OUT, $file);
 					close OUT;
-					Win32::GUI::MessageBox($self, "Файл распакован в $ENV{PWD}/$name", "Записано", 0x0000|0x0030);
+					Win32::GUI::MessageBox($self, "Р¤Р°Р№Р» СЂР°СЃРїР°РєРѕРІР°РЅ РІ $ENV{PWD}/$name", "Р—Р°РїРёСЃР°РЅРѕ", 0x0000|0x0030);
 				}
 			}
 			else {
@@ -354,9 +354,9 @@ sub UnSteg ($) {
 		}
 	}
 	else {
-		Win32::GUI::MessageBox($self, "Данный файл не содержит стеганографической информации.\nВы можете записать свою информацию в этот файл или выбрать другой", "Файл не является стеганографическим контейнером", 0x0000|0x0040)
+		Win32::GUI::MessageBox($self, "Р”Р°РЅРЅС‹Р№ С„Р°Р№Р» РЅРµ СЃРѕРґРµСЂР¶РёС‚ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєРѕР№ РёРЅС„РѕСЂРјР°С†РёРё.\nР’С‹ РјРѕР¶РµС‚Рµ Р·Р°РїРёСЃР°С‚СЊ СЃРІРѕСЋ РёРЅС„РѕСЂРјР°С†РёСЋ РІ СЌС‚РѕС‚ С„Р°Р№Р» РёР»Рё РІС‹Р±СЂР°С‚СЊ РґСЂСѓРіРѕР№", "Р¤Р°Р№Р» РЅРµ СЏРІР»СЏРµС‚СЃСЏ СЃС‚РµРіР°РЅРѕРіСЂР°С„РёС‡РµСЃРєРёРј РєРѕРЅС‚РµР№РЅРµСЂРѕРј", 0x0000|0x0040)
 	}
-	
+
 	return 0;
 }
 
@@ -366,14 +366,14 @@ sub Pass {
 	my $text = xcrypt($pass{$asking}, eval("read$ext{$asking}('$file{$asking}')"));
 	$asking->{unSteg}->Text($text);
 	$dialog->Hide();
-	
+
 	return 0;
 }
 
 sub File {
 	my $self = shift;
 	$file_tc{$self} = $self->GetOpenFileName(
-		-filter => \("Текстовый файл", "*.txt"),
+		-filter => \("РўРµРєСЃС‚РѕРІС‹Р№ С„Р°Р№Р»", "*.txt"),
 		-filemustexist => 1,
 		-pathmustexist => 1,
 	);
@@ -394,7 +394,7 @@ sub File {
 			}
 		}
 		else {
-			Win32::GUI::MessageBox($self, "Файл превышает максимально допустимый размер для данного контейнера\nВы можете записать файл, размером не больше чем ".int(($max_l-256)/1024)."kb.", "Файл слишком большой", 0x0000|0x0030)
+			Win32::GUI::MessageBox($self, "Р¤Р°Р№Р» РїСЂРµРІС‹С€Р°РµС‚ РјР°РєСЃРёРјР°Р»СЊРЅРѕ РґРѕРїСѓСЃС‚РёРјС‹Р№ СЂР°Р·РјРµСЂ РґР»СЏ РґР°РЅРЅРѕРіРѕ РєРѕРЅС‚РµР№РЅРµСЂР°\nР’С‹ РјРѕР¶РµС‚Рµ Р·Р°РїРёСЃР°С‚СЊ С„Р°Р№Р», СЂР°Р·РјРµСЂРѕРј РЅРµ Р±РѕР»СЊС€Рµ С‡РµРј ".int(($max_l-256)/1024)."kb.", "Р¤Р°Р№Р» СЃР»РёС€РєРѕРј Р±РѕР»СЊС€РѕР№", 0x0000|0x0030)
 		}
 	}
 }
