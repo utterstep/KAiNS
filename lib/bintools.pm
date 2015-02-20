@@ -1,5 +1,5 @@
 sub dec2bin ($) { #convert decimai number into 32-bit representation
-	return unpack("B32", pack("N", shift)) 
+	return unpack("B32", pack("N", shift))
 }
 
 sub str2bin ($) { #convert string into array of bits, 1 symbol = 8 bits = 1 byte

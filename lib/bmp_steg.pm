@@ -37,7 +37,7 @@ sub isContainerBmp ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 	undef $t; #i don't wanna say that it'll help...
 
 	for ($i=0; $i < 16; $i++) { #assembling message size
-		my @here = byte2bin($text[$i]); 
+		my @here = byte2bin($text[$i]);
 		$m_size .= join ('', @here[6..7]);
 	}
 
@@ -86,14 +86,14 @@ sub write2Bmp ($$) { #okay, let's write a little
 		undef @bin[$i..$i+1];
 		$write .= chr (oct ('0b' . join('',@now)));
 	}
-	
+
 	###now we'll write to file directly###
 	sysseek (OUT, $off, 0);
 	syswrite (OUT, $write);
 	close OUT;
 	undef $write;
 	undef @bin;
-	
+
 	return 0;
 }
 

@@ -39,7 +39,7 @@ sub isContainerWav ($) { #should return boolean objects (IS_CONTAINER, IS_CRYPTE
 
 	my $size = (stat($_[0]))[7]-44;
 	$m_size = (oct ('0b' . $m_size))*2 + 8; #converting it in 2bit-blocks
-	
+
 	return (0, 0, 0) if ($m_size > $size); #that's no good
 
 	for ($i = 8; $i < 20; $i++) { #assembling signature
@@ -81,7 +81,7 @@ sub write2Wav ($$) { #okay, let's write a little
 		@now[4..7] = @bin[$i..$i+3];
 		$write .= chr (oct ('0b' . join ('', @now))) . substr($t, 1, 1);
 	}
-	
+
 	###now we'll write to file directly###
 	sysseek (OUT, 44, 0);
 	syswrite (OUT, $write);
@@ -126,10 +126,10 @@ sub readWav ($) { #let's read
 	for ($i = 0; $i < $size; $i+=8) { #convert it to message back
 		$text .= chr (oct ('0b' . substr($b_text, $i, 8)));
 	}
-	
+
 	undef @text;
 	undef $b_text;
-	
+
 	return substr($text, 6); #return all except signature
 }
 
